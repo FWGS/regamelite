@@ -1,0 +1,12 @@
+*.obj
+*.tlog
+*.lib
+*.ilk
+*.dll
+*.exp
+*.log
+*.suo
+*.idb
+*.pdb
+*.pch
+*.ipch
