@@ -642,7 +642,7 @@ bool NavAreaBuildPath(CNavArea *startArea, CNavArea *goalArea, const Vector *goa
 	// TODO: Cost might work as "manhattan distance"
 	startArea->SetTotalCost((*startArea->GetCenter() - actualGoalPos).Length());
 
-	float_precision initCost = costFunc(startArea, NULL, NULL);
+	float initCost = costFunc(startArea, NULL, NULL);
 	if (initCost < 0.0f)
 		return false;
 
@@ -788,7 +788,7 @@ bool NavAreaBuildPath(CNavArea *startArea, CNavArea *goalArea, const Vector *goa
 			if (newArea == area)
 				continue;
 
-			float_precision newCostSoFar = costFunc(newArea, area, ladder);
+			float newCostSoFar = costFunc(newArea, area, ladder);
 
 			// check if cost functor says this area is a dead-end
 			if (newCostSoFar < 0.0f)
@@ -802,7 +802,7 @@ bool NavAreaBuildPath(CNavArea *startArea, CNavArea *goalArea, const Vector *goa
 			else
 			{
 				// compute estimate of distance left to go
-				float_precision newCostRemaining = (*newArea->GetCenter() - actualGoalPos).Length();
+				float newCostRemaining = (*newArea->GetCenter() - actualGoalPos).Length();
 
 				// track closest area to goal in case path fails
 				if (closestArea && newCostRemaining < closestAreaDist)
@@ -838,7 +838,7 @@ bool NavAreaBuildPath(CNavArea *startArea, CNavArea *goalArea, const Vector *goa
 // Compute distance between two areas. Return -1 if can't reach 'endArea' from 'startArea'.
 
 template <typename CostFunctor>
-float_precision NavAreaTravelDistance(CNavArea *startArea, CNavArea *endArea, CostFunctor &costFunc)
+float NavAreaTravelDistance(CNavArea *startArea, CNavArea *endArea, CostFunctor &costFunc)
 {
 	if (startArea == NULL)
 		return -1.0f;
@@ -854,7 +854,7 @@ float_precision NavAreaTravelDistance(CNavArea *startArea, CNavArea *endArea, Co
 		return -1.0f;
 
 	// compute distance along path
-	float_precision distance = 0.0f;
+	float distance = 0.0f;
 	for (CNavArea *area = endArea; area->GetParent(); area = area->GetParent())
 	{
 		distance += (*area->GetCenter() - *area->GetParent()->GetCenter()).Length();

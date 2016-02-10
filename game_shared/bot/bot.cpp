@@ -76,13 +76,13 @@ void CBot::BotThink()
 {
 	if (gpGlobals->time >= m_flNextBotThink)
 	{
-		m_flNextBotThink = gpGlobals->time;
+		m_flNextBotThink = gpGlobals->time + g_flBotCommandInterval;
 
 		Upkeep();
 
 		if (gpGlobals->time >= m_flNextFullBotThink)
 		{
-			m_flNextFullBotThink = gpGlobals->time;
+			m_flNextFullBotThink = gpGlobals->time + g_flBotFullThinkInterval;
 
 			ResetCommand();
 			Update();

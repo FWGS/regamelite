@@ -1182,7 +1182,7 @@ bool CHalfLifeMultiplay::PrisonRoundEndCheck(int NumAliveTerrorist, int NumAlive
 	// checks to scenario Escaped Terrorist's
 	if (m_bMapHasEscapeZone)
 	{
-		float_precision flEscapeRatio = (float_precision)m_iHaveEscaped / (float_precision)m_iNumEscapers;
+		float flEscapeRatio = (float)m_iHaveEscaped / (float)m_iNumEscapers;
 
 		if (flEscapeRatio >= m_flRequiredEscapeRatio)
 		{

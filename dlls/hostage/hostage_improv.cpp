@@ -100,7 +100,7 @@ void CHostageImprov::ClearFaceTo()
 void CHostageImprov::MoveTowards(const Vector &pos, float deltaT)
 {
 	Vector move;
-	float_precision accelRate;
+	float accelRate;
 	const float crouchWalkRate = 250.0f;
 
 	// Jump up on ledges
@@ -198,33 +198,14 @@ bool CHostageImprov::FaceTowards(const Vector &target, float deltaT)
 {
 	float error = 0;
 	Vector2D to = (target - GetFeet()).Make2D();
-
-#ifndef PLAY_GAMEDLL
 	to.NormalizeInPlace();
-#else
-	// TODO: fix test demo
-	float_precision float_x = target.x - GetFeet().x;
-	float_precision float_y = target.y - GetFeet().y;
-	float_precision flLen = to.Length();
-
-	if (flLen <= 0)
-	{
-		to.x = 1;
-		to.y = 0;
-	}
-	else
-	{
-		to.x = float_x / flLen;
-		to.y = float_y / flLen;
-	}
-#endif // PLAY_GAMEDLL
 
 	float moveAngle = GetMoveAngle();
 
 	Vector2D lat(BotCOS(moveAngle), BotSIN(moveAngle));
 	Vector2D dir(-lat.y, lat.x);
 
-	float_precision dot = DotProduct(to, dir);
+	float dot = DotProduct(to, dir);
 
 	if (DotProduct(to, lat) < 0.0f)
 	{
@@ -278,7 +259,7 @@ void CHostageImprov::FaceOutwards()
 
 		UTIL_TraceLine(GetCentroid(), to, ignore_monsters, ignore_glass, m_hostage->edict(), &result);
 
-		float_precision range = (result.vecEndPos - GetCentroid()).LengthSquared();
+		float range = (result.vecEndPos - GetCentroid()).LengthSquared();
 
 		if (range > farthestRange)
 		{
@@ -566,7 +547,7 @@ CBasePlayer *CHostageImprov::GetClosestPlayerByTravelDistance(int team, float *r
 			ShortestPathCost cost;
 			Vector vecCenter = player->Center();
 
-			float_precision range = NavAreaTravelDistance(GetLastKnownArea(), TheNavAreaGrid.GetNearestNavArea(&vecCenter), cost);
+			float range = NavAreaTravelDistance(GetLastKnownArea(), TheNavAreaGrid.GetNearestNavArea(&vecCenter), cost);
 
 			if (range > 0 && range < closeRange)
 			{
@@ -887,8 +868,8 @@ void CHostageImprov::UpdatePosition(float deltaT)
 	if (m_isLookingAt)
 	{
 		Vector angles = UTIL_VecToAngles(m_viewGoal - GetEyes());
-		float_precision pitch = angles.x - m_hostage->pev->angles.x;
-		float_precision yaw = angles.y - m_hostage->pev->angles.y;
+		float pitch = angles.x - m_hostage->pev->angles.x;
+		float yaw = angles.y - m_hostage->pev->angles.y;
 
 		while (yaw > 180.0f)
 			yaw -= 360.0f;
@@ -955,7 +936,7 @@ void CHostageImprov::UpdatePosition(float deltaT)
 	m_vel.x += m_vel.x * -friction * deltaT;
 	m_vel.y += m_vel.y * -friction * deltaT;
 
-	float_precision speed = m_vel.NormalizeInPlace();
+	float speed = m_vel.NormalizeInPlace();
 
 	const float maxSpeed = 285.0f;
 	if (speed > maxSpeed)
@@ -1490,7 +1471,7 @@ CBasePlayer *CHostageImprov::GetClosestVisiblePlayer(int team)
 		if (player == NULL || (team > 0 && player->m_iTeam != team))
 			continue;
 
-		float_precision rangeSq = (GetCentroid() - player->pev->origin).LengthSquared();
+		float rangeSq = (GetCentroid() - player->pev->origin).LengthSquared();
 
 		if (rangeSq < closeRangeSq)
 		{

@@ -1020,8 +1020,8 @@ int CBasePlayer::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 
 		if (pev->armorvalue != 0.0f && IsArmored(m_LastHitGroup))
 		{
-			float_precision flNew = flRatio * flDamage;
-			float_precision flArmor = (flDamage - flNew) * flBonus;
+			float flNew = flRatio * flDamage;
+			float flArmor = (flDamage - flNew) * flBonus;
 
 			// Does this use more armor than we have?
 			if (flArmor > pev->armorvalue)
@@ -1264,8 +1264,8 @@ int CBasePlayer::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 	// armor doesn't protect against fall or drown damage!
 	if (pev->armorvalue != 0.0f && !(bitsDamageType & (DMG_DROWN | DMG_FALL)) && IsArmored(m_LastHitGroup))
 	{
-		float_precision flNew = flRatio * flDamage;
-		float_precision flArmor = (flDamage - flNew) * flBonus;
+		float flNew = flRatio * flDamage;
+		float flArmor = (flDamage - flNew) * flBonus;
 
 		// Does this use more armor than we have?
 		if (flArmor > pev->armorvalue)
@@ -1835,7 +1835,7 @@ void VIP_SafetyZoneIcon_Clear(CBasePlayer *player)
 
 void CBasePlayer::SendFOV(int fov)
 {
-	pev->fov = (float_precision)fov;
+	pev->fov = (float)fov;
 	m_iClientFOV = fov;
 	m_iFOV = fov;
 
@@ -4120,7 +4120,7 @@ void CBasePlayer::PreThink()
 		// Slow down the player based on the velocity modifier
 		if (m_flVelocityModifier < 1.0f)
 		{
-			float_precision modvel = m_flVelocityModifier + 0.01;
+			float modvel = m_flVelocityModifier + 0.01;
 
 			m_flVelocityModifier = modvel;
 			pev->velocity = pev->velocity * modvel;
@@ -4135,7 +4135,7 @@ void CBasePlayer::PreThink()
 		// check every 5 seconds
 		m_flIdleCheckTime = gpGlobals->time + 5.0;
 
-		float_precision flLastMove = gpGlobals->time - m_fLastMovement;
+		float flLastMove = gpGlobals->time - m_fLastMovement;
 
 		//check if this player has been inactive for 2 rounds straight
 		if (flLastMove > g_pGameRules->m_fMaxIdlePeriod)
@@ -7723,7 +7723,7 @@ LINK_ENTITY_TO_CLASS(info_intermission, CInfoIntermission);
 
 void CBasePlayer::StudioEstimateGait()
 {
-	float_precision dt;
+	float dt;
 	Vector est_velocity;
 
 	dt = gpGlobals->frametime;
@@ -7755,8 +7755,8 @@ void CBasePlayer::StudioEstimateGait()
 
 	if (!est_velocity.x && !est_velocity.y)
 	{
-		float_precision flYawDiff = pev->angles.y - m_flGaityaw;
-		float_precision flYaw = fmod(flYawDiff, 360);
+		float flYawDiff = pev->angles.y - m_flGaityaw;
+		float flYaw = fmod(flYawDiff, 360);
 
 		flYawDiff = flYawDiff - (int64_t)(flYawDiff / 360) * 360;
 
@@ -7783,7 +7783,7 @@ void CBasePlayer::StudioEstimateGait()
 		else
 			flYawDiff *= dt;
 
-		if ((float_precision)abs((int64_t)flYawDiff) < 0.1)
+		if ((float)abs((int64_t)flYawDiff) < 0.1)
 			flYawDiff = 0;
 
 		m_flGaityaw += flYawDiff;
@@ -7793,7 +7793,7 @@ void CBasePlayer::StudioEstimateGait()
 	}
 	else
 	{
-		m_flGaityaw = (atan2((float_precision)est_velocity.y, (float_precision)est_velocity.x) * 180 / M_PI);
+		m_flGaityaw = (atan2((float)est_velocity.y, (float)est_velocity.x) * 180 / M_PI);
 
 		if (m_flGaityaw > 180)
 			m_flGaityaw = 180;
@@ -7843,8 +7843,8 @@ void CBasePlayer::CalculateYawBlend()
 	float dt;
 	float maxyaw = 255.0f;
 
-	float_precision flYaw;		// view direction relative to movement
-	float_precision blend_yaw;
+	float flYaw;		// view direction relative to movement
+	float blend_yaw;
 
 	dt = gpGlobals->frametime;
 
@@ -7857,7 +7857,7 @@ void CBasePlayer::CalculateYawBlend()
 	StudioEstimateGait();
 
 	// calc side to side turning
-	flYaw = fmod((float_precision)(pev->angles.y - m_flGaityaw), 360);
+	flYaw = fmod((float)(pev->angles.y - m_flGaityaw), 360);
 
 	if (flYaw < -180)
 		flYaw += 360;
@@ -7898,7 +7898,7 @@ void CBasePlayer::CalculateYawBlend()
 void CBasePlayer::StudioProcessGait()
 {
 	mstudioseqdesc_t *pseqdesc;
-	float_precision dt = gpGlobals->frametime;
+	float dt = gpGlobals->frametime;
 
 	if (dt < 0.0)
 		dt = 0;
@@ -7938,7 +7938,7 @@ void CBasePlayer::ResetStamina()
 	pev->fuser2 = 0;
 }
 
-float_precision GetPlayerPitch(const edict_t *pEdict)
+float GetPlayerPitch(const edict_t *pEdict)
 {
 	entvars_t *pev = VARS(const_cast<edict_t *>(pEdict));
 	CBasePlayer *pPlayer = dynamic_cast<CBasePlayer *>(CBasePlayer::Instance(pev));
@@ -7949,7 +7949,7 @@ float_precision GetPlayerPitch(const edict_t *pEdict)
 	return pPlayer->m_flPitch;
 }
 
-float_precision GetPlayerYaw(const edict_t *pEdict)
+float GetPlayerYaw(const edict_t *pEdict)
 {
 	entvars_t *pev = VARS(const_cast<edict_t *>(pEdict));
 	CBasePlayer *pPlayer = dynamic_cast<CBasePlayer *>(CBasePlayer::Instance(pev));

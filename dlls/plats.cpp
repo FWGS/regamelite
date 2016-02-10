@@ -958,7 +958,7 @@ void CFuncTrackTrain::Blocked(CBaseEntity *pOther)
 	// Blocker is on-ground on the train
 	if ((pevOther->flags & FL_ONGROUND) && VARS(pevOther->groundentity) == pev)
 	{
-		float_precision deltaSpeed = fabs((float_precision)pev->speed);
+		float deltaSpeed = fabs((float)pev->speed);
 
 		if (deltaSpeed > 50)
 		{
@@ -1011,7 +1011,7 @@ void CFuncTrackTrain::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	}
 	else
 	{
-		float_precision delta = ((int)(pev->speed * 4) / (int)m_speed) * 0.25 + 0.25 * value;
+		float delta = ((int)(pev->speed * 4) / (int)m_speed) * 0.25 + 0.25 * value;
 
 		if (delta > 1)
 			delta = 1;
@@ -1031,9 +1031,9 @@ void CFuncTrackTrain::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	}
 }
 
-float_precision Fix(float_precision v)
+float Fix(float v)
 {
-	float_precision angle = v;
+	float angle = v;
 
 	while (angle < 0)
 		angle += 360;
@@ -1131,14 +1131,7 @@ void CFuncTrackTrain::Next()
 	CPathTrack *pnext = m_ppath->LookAhead(&nextPos, pev->speed * 0.1, 1);
 	nextPos.z += m_height;
 
-#ifndef PLAY_GAMEDLL
 	pev->velocity = (nextPos - pev->origin) * 10;
-#else
-	// TODO: fix test demo
-	pev->velocity.x = ((float_precision)(nextPos.x - pev->origin.x) * 10.0f);
-	pev->velocity.y = ((float_precision)(nextPos.y - pev->origin.y) * 10.0f);
-	pev->velocity.z = ((nextPos.z - pev->origin.z) * 10.0f);
-#endif // PLAY_GAMEDLL
 
 	Vector nextFront = pev->origin;
 	nextFront.z -= m_height;
@@ -1153,22 +1146,14 @@ void CFuncTrackTrain::Next()
 	Vector delta = nextFront - pev->origin;
 	Vector angles = UTIL_VecToAngles(delta);
 
-	float_precision fixAngleY = angles.y + 180.0f;
+	float fixAngleY = angles.y + 180.0f;
 
 	// The train actually points west
 	angles.y += fixAngleY;
 
 	// TODO: All of this crap has to be done to make the angles not wrap around, revisit this.
-#ifndef PLAY_GAMEDLL
 	FixupAngles(angles);
 	FixupAngles(pev->angles);
-#else
-	angles.x = Fix(angles.x);
-	angles.y = Fix(fixAngleY);	// TODO: fix test demo
-	angles.z = Fix(angles.z);
-
-	FixupAngles(pev->angles);
-#endif // PLAY_GAMEDLL
 
 	if (!pnext || (delta.x == 0 && delta.y == 0))
 		angles = pev->angles;
@@ -1406,7 +1391,7 @@ void CFuncTrackTrain::NearestPath()
 {
 	CBaseEntity *pTrack = NULL;
 	CBaseEntity *pNearest = NULL;
-	float_precision dist;
+	float dist;
 	float closest;
 
 	closest = 1024;
@@ -1745,7 +1730,7 @@ TRAIN_CODE CFuncTrackChange::EvaluateTrain(CPathTrack *pcurrent)
 			return TRAIN_BLOCKING;
 
 		Vector dist = pev->origin - m_train->pev->origin;
-		float_precision length = dist.Length2D();
+		float length = dist.Length2D();
 
 		// Empirically determined close distance
 		if (length < m_train->m_length)
@@ -1763,7 +1748,7 @@ TRAIN_CODE CFuncTrackChange::EvaluateTrain(CPathTrack *pcurrent)
 
 void CFuncTrackChange::UpdateTrain(Vector &dest)
 {
-	float_precision time = (pev->nextthink - pev->ltime);
+	float time = (pev->nextthink - pev->ltime);
 
 	m_train->pev->velocity = pev->velocity;
 	m_train->pev->avelocity = pev->avelocity;

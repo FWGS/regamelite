@@ -474,7 +474,7 @@ void CGrenade::SG_Smoke()
 	else
 	{
 		Vector origin, angle;
-		float_precision x_old, y_old, R_angle;
+		float x_old, y_old, R_angle;
 
 		UTIL_MakeVectors(pev->angles);
 
@@ -484,8 +484,8 @@ void CGrenade::SG_Smoke()
 
 		R_angle = m_angle / (180.00433335 / M_PI);
 
-		x_old = cos((float_precision)R_angle);
-		y_old = sin((float_precision)R_angle);
+		x_old = cos((float)R_angle);
+		y_old = sin((float)R_angle);
 
 		angle.x = origin.x * x_old - origin.y * y_old;
 		angle.y = origin.x * y_old + origin.y * x_old;
@@ -571,7 +571,7 @@ void CGrenade::SG_Detonate()
 
 		if (pEnt)
 		{
-			//float_precision
+			//float
 			float fDistance = (pEnt->pev->origin - pev->origin).Length();
 
 			if (fDistance != 0.0f && fDistance <= 250.0f)

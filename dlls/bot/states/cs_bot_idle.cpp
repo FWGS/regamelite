@@ -275,7 +275,7 @@ void IdleState::OnUpdate(CCSBot *me)
 
 							// just use the first overlapping nav area as a reasonable approximation
 							ShortestPathCost pathCost = ShortestPathCost();
-							float_precision dist = NavAreaTravelDistance(me->GetLastKnownArea(), TheNavAreaGrid.GetNearestNavArea(&ctrl->GetZone(z)->m_center), pathCost);
+							float dist = NavAreaTravelDistance(me->GetLastKnownArea(), TheNavAreaGrid.GetNearestNavArea(&ctrl->GetZone(z)->m_center), pathCost);
 
 							if (/*dist >= 0.0f && */dist < travelDistance)
 							{

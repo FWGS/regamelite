@@ -933,7 +933,7 @@ float UTIL_Approach(float target, float value, float speed)
 	return value;
 }
 
-float_precision UTIL_ApproachAngle(float target, float value, float speed)
+float UTIL_ApproachAngle(float target, float value, float speed)
 {
 	target = UTIL_AngleMod(target);
 	value = UTIL_AngleMod(target);
@@ -957,9 +957,9 @@ float_precision UTIL_ApproachAngle(float target, float value, float speed)
 	return value;
 }
 
-float_precision UTIL_AngleDistance(float next, float cur)
+float UTIL_AngleDistance(float next, float cur)
 {
-	float_precision delta;
+	float delta;
 
 	delta = next - cur;
 
@@ -2299,7 +2299,7 @@ bool UTIL_IsGame(const char *gameName)
 	return false;
 }
 
-float_precision UTIL_GetPlayerGaitYaw(int playerIndex)
+float UTIL_GetPlayerGaitYaw(int playerIndex)
 {
 	CBasePlayer *pPlayer = static_cast<CBasePlayer *>(UTIL_PlayerByIndex(playerIndex));
 	if (pPlayer != NULL)

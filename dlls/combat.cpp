@@ -772,14 +772,7 @@ int CBaseMonster::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 		if (pInflictor)
 		{
-#ifndef PLAY_GAMEDLL
 			vecDir = (pInflictor->Center() - Vector(0, 0, 10) - Center()).Normalize();
-#else
-			// TODO: fix test demo
-			vecDir = NormalizeSubtract<
-				float_precision, float, float_precision, float_precision
-				>(Center(), pInflictor->Center() - Vector(0, 0, 10));
-#endif // PLAY_GAMEDLL
 			vecDir = g_vecAttackDir = vecDir.Normalize();
 		}
 	}
@@ -914,7 +907,7 @@ int CBaseMonster::DeadTakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker
 
 float CBaseMonster::DamageForce(float damage)
 {
-	float_precision force = damage * ((32 * 32 * 72.0) / (pev->size.x * pev->size.y * pev->size.z)) * 5;
+	float force = damage * ((32 * 32 * 72.0) / (pev->size.x * pev->size.y * pev->size.z)) * 5;
 
 	if (force > 1000.0)
 	{

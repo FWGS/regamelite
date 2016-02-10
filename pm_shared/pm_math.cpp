@@ -16,18 +16,18 @@ void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up)
 {
 	float sr, sp, sy, cr, cp;
 
-	float_precision cy;
-	float_precision angle;
+	float cy;
+	float angle;
 
-	angle = (float_precision)(angles[YAW] * (M_PI * 2 / 360));
+	angle = (float)(angles[YAW] * (M_PI * 2 / 360));
 	sy = sin(angle);
 	cy = cos(angle);
 
-	angle = (float_precision)(angles[PITCH] * (M_PI * 2 / 360));
+	angle = (float)(angles[PITCH] * (M_PI * 2 / 360));
 	sp = sin(angle);
 	cp = cos(angle);
 
-	angle = (float_precision)(angles[ROLL] * (M_PI * 2 / 360));
+	angle = (float)(angles[ROLL] * (M_PI * 2 / 360));
 	sr = sin(angle);
 	cr = cos(angle);
 
@@ -88,18 +88,18 @@ void AngleVectorsTranspose(const vec_t *angles, vec_t *forward, vec_t *right, ve
 
 void AngleMatrix(const vec_t *angles, float (*matrix)[4])
 {
-	float_precision angle;
-	float_precision  sr, sp, sy, cr, cp, cy;
+	float angle;
+	float  sr, sp, sy, cr, cp, cy;
 
-	angle = (float_precision)(angles[ROLL] * (M_PI * 2 / 360));
+	angle = (float)(angles[ROLL] * (M_PI * 2 / 360));
 	sy = sin(angle);
 	cy = cos(angle);
 
-	angle = (float_precision)(angles[YAW] * (M_PI * 2 / 360));
+	angle = (float)(angles[YAW] * (M_PI * 2 / 360));
 	sp = sin(angle);
 	cp = cos(angle);
 
-	angle = (float_precision)(angles[PITCH] * (M_PI * 2 / 360));
+	angle = (float)(angles[PITCH] * (M_PI * 2 / 360));
 	sr = sin(angle);
 	cr = cos(angle);
 
@@ -242,7 +242,7 @@ void VectorMA(const vec_t *veca, float scale, const vec_t *vecb, vec_t *vecc)
 	vecc[2] = veca[2] + scale * vecb[2];
 }
 
-float_precision _DotProduct(const vec_t *v1, const vec_t *v2)
+float _DotProduct(const vec_t *v1, const vec_t *v2)
 {
 	return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
 }
@@ -275,10 +275,10 @@ void _CrossProduct(const vec_t *v1, const vec_t *v2, vec_t *cross)
 	cross[2] = v1[0] * v2[1] - v1[1] * v2[0];
 }
 
-float_precision Length(const vec_t *v)
+float Length(const vec_t *v)
 {
 	int i;
-	float_precision length = 0.0f;
+	float length = 0.0f;
 
 	for (i = 0; i < 3; ++i)
 		length += v[i] * v[i];
@@ -293,12 +293,12 @@ float Distance(const vec_t *v1, const vec_t *v2)
 	return Length(d);
 }
 
-float_precision VectorNormalize(vec_t *v)
+float VectorNormalize(vec_t *v)
 {
-	float_precision length;
-	float_precision ilength;
+	float length;
+	float ilength;
 
-	length = sqrt((float_precision)(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]));
+	length = sqrt((float)(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]));
 
 	if (length)
 	{

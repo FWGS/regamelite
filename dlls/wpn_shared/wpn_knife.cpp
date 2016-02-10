@@ -128,7 +128,7 @@ void FindHullIntersection(const Vector &vecSrc, TraceResult &tr, float *mins, fl
 
 				if (tmpTrace.flFraction < 1.0f)
 				{
-					float_precision thisDistance = (tmpTrace.vecEndPos - vecSrc).Length();
+					float thisDistance = (tmpTrace.vecEndPos - vecSrc).Length();
 
 					if (thisDistance < distance)
 					{

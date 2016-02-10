@@ -245,7 +245,7 @@ inline float DirectionToAngle(NavDirType dir)
 	return 0.0f;
 }
 
-inline NavDirType AngleToDirection(float_precision angle)
+inline NavDirType AngleToDirection(float angle)
 {
 	while (angle < 0.0f)
 		angle += 360.0f;
@@ -309,7 +309,7 @@ inline float SnapToGrid(float value)
 	return c * GenerationStepSize;
 }
 
-inline float_precision NormalizeAngle(float_precision angle)
+inline float NormalizeAngle(float angle)
 {
 	while (angle < -180.0f)
 		angle += 360.0f;

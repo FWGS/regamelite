@@ -19,7 +19,7 @@ TYPEDESCRIPTION CFuncVehicle::m_SaveData[] =
 	DEFINE_FIELD(CFuncVehicle, m_oldSpeed, FIELD_FLOAT),
 };
 
-float_precision Fix2(float angle)
+float Fix2(float angle)
 {
 	while (angle < 0)
 		angle += 360;
@@ -188,7 +188,7 @@ void CFuncVehicle::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 			}
 		}
 
-		float_precision flSpeedRatio = delta;
+		float flSpeedRatio = delta;
 
 		if (delta > 0)
 		{
@@ -310,7 +310,7 @@ void CFuncVehicle::UpdateSound()
 
 void CFuncVehicle::CheckTurning()
 {
-	float_precision maxspeed;
+	float maxspeed;
 	TraceResult tr;
 	bool bTurnIntoWall = false;
 
@@ -579,7 +579,7 @@ void CFuncVehicle::Next()
 		Vector vTargetAngle, vAngle;
 
 		float vx;
-		float_precision vy;
+		float vy;
 
 		m_vVehicleDirection = CrossProduct(m_vSurfaceNormal, gpGlobals->v_forward);
 		m_vVehicleDirection = CrossProduct(m_vSurfaceNormal, m_vVehicleDirection);
@@ -781,7 +781,7 @@ void CFuncVehicle::NearestPath()
 {
 	CBaseEntity *pTrack = NULL;
 	CBaseEntity *pNearest = NULL;
-	float_precision dist;
+	float dist;
 	float closest = 1024;
 
 	while ((pTrack = UTIL_FindEntityInSphere(pTrack, pev->origin, 1024)) != NULL)

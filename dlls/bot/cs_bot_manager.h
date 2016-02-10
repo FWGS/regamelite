@@ -130,7 +130,7 @@ public:
 				continue;
 
 			// just use the first overlapping nav area as a reasonable approximation
-			float_precision dist = NavAreaTravelDistance(startArea, m_zone[i].m_area[0], costFunc);
+			float dist = NavAreaTravelDistance(startArea, m_zone[i].m_area[0], costFunc);
 
 			if (/*dist >= 0.0f && */dist < closeDist)
 			{

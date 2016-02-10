@@ -136,13 +136,7 @@ public:
 		}
 	}
 	void ApplyForce(Vector force);					// apply a force to the hostage
-#ifdef PLAY_GAMEDLL
-	void ApplyForce2(float_precision x, float_precision y)
-	{
-		m_vel.x += x;
-		m_vel.y += y;
-	}
-#endif // PLAY_GAMEDLL
+
 	const Vector GetActualVelocity() const { return m_actualVel; }
 	void SetMoveLimit(MoveType limit) { m_moveLimit = limit; }
 	MoveType GetMoveLimit() const { return m_moveLimit; }
@@ -378,13 +372,7 @@ public:
 			return true;
 
 		to = entity->pev->origin - m_improv->GetCentroid();
-
-#ifdef PLAY_GAMEDLL
-		// TODO: fix test demo
 		range = to.NormalizeInPlace<float>();
-#else
-		range = to.NormalizeInPlace();
-#endif // PLAY_GAMEDLL
 		CBasePlayer *player = static_cast<CBasePlayer *>(entity);
 
 		const float spring = 50.0f;
@@ -398,15 +386,9 @@ public:
 			return true;
 
 		const float minSpace = (spring - range);
-		float_precision ds = -minSpace;
+		float ds = -minSpace;
 
-#ifndef PLAY_GAMEDLL
 		m_improv->ApplyForce(to * ds);
-#else
-		// TODO: fix test demo
-		m_improv->ApplyForce2(to.x * ds, to.y * ds);
-#endif // PLAY_GAMEDLL
-
 		const float force = 0.1f;
 		m_improv->ApplyForce(m_speed * -force * m_velDir);
 
@@ -431,7 +413,7 @@ public:
 	bool operator()(CBaseEntity *entity)
 	{
 		Vector to;
-		float_precision range;
+		float range;
 		const float closeRange = 60.0f;
 		const float aheadTolerance = 0.95f;
 

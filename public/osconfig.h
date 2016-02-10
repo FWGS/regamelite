@@ -181,6 +181,7 @@ typedef long long __int64_t;
 	typedef unsigned long DWORD;
 	typedef unsigned short WORD;
 	typedef unsigned int UNINT32;
+	typedef unsigned char uint8;
 
 	#define CDECL __attribute__ ((cdecl))
 	#define STDCALL __attribute__ ((stdcall))

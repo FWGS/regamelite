@@ -1046,7 +1046,7 @@ void CGlow::Think()
 void CGlow::Animate(float frames)
 {
 	if (m_maxFrame > 0)
-		pev->frame = fmod((float_precision)(pev->frame + frames), (float_precision)m_maxFrame);
+		pev->frame = fmod((float)(pev->frame + frames), (float)m_maxFrame);
 }
 
 LINK_ENTITY_TO_CLASS(env_bombglow, CBombGlow);
@@ -1243,7 +1243,7 @@ void CSprite::Animate(float frames)
 			TurnOff();
 
 		else if (m_maxFrame > 0)
-			pev->frame = fmod((float_precision)pev->frame, (float_precision)m_maxFrame);
+			pev->frame = fmod((float)pev->frame, (float)m_maxFrame);
 	}
 }
 

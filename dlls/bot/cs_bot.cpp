@@ -410,7 +410,7 @@ void CCSBot::Panic(CBasePlayer *enemy)
 		float c45 = 0.7071f;
 		float size = 100.0f;
 
-		float_precision shift = RANDOM_FLOAT(-75.0, 75.0);
+		float shift = RANDOM_FLOAT(-75.0, 75.0);
 	
 		if (along > c45)
 		{
@@ -436,7 +436,7 @@ void CCSBot::Panic(CBasePlayer *enemy)
 	else
 	{
 		const float offset = 200.0f;
-		float_precision side = RANDOM_FLOAT(-offset, offset) * 2.0f;
+		float side = RANDOM_FLOAT(-offset, offset) * 2.0f;
 
 		spot.x = pev->origin.x - dir.x * offset + perp.x * side;
 		spot.y = pev->origin.y - dir.y * offset + perp.y * side;

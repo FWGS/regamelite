@@ -782,16 +782,7 @@ void CHostage::Touch(CBaseEntity *pOther)
 	}
 
 	vPush = (pev->origin - pOther->pev->origin).Make2D();
-
-#ifndef PLAY_GAMEDLL
-	vPush = vPush.Normalize() * pushForce;
-
-	pev->velocity.x += vPush.x;
-	pev->velocity.y += vPush.y;
-#else
-	// TODO: fix test demo
-	pev->velocity = pev->velocity + NormalizeMulScalar<float_precision, float_precision, float>(vPush, pushForce);
-#endif // PLAY_GAMEDLL
+	pev->velocity = pev->velocity + NormalizeMulScalar<float, float, float>(vPush, pushForce);
 }
 
 void CHostage::DoFollow()
@@ -903,7 +894,7 @@ void CHostage::MoveToward(const Vector &vecLoc)
 	Vector vecMove;
 	CBaseEntity *pFollowing;
 	Vector vecAng;
-	float_precision flDist;
+	float flDist;
 
 	pFollowing = GetClassPtr((CBaseEntity *)m_hTargetEnt->pev);
 	vecMove = vecLoc - pev->origin;
@@ -921,7 +912,7 @@ void CHostage::MoveToward(const Vector &vecLoc)
 
 	if (nFwdMove != PATH_TRAVERSABLE_EMPTY)
 	{
-		float_precision flSpeed = 250;
+		float flSpeed = 250;
 
 		vecbigDest = pFollowing->pev->origin;
 		vecbigDest.z += pFollowing->pev->mins.z;
@@ -1096,16 +1087,7 @@ void CHostage::Wiggle()
 			vec = vec - wiggle_directions[i];
 		}
 	}
-
-#ifndef PLAY_GAMEDLL
 	vec = vec + Vector(RANDOM_FLOAT(-3, 3), RANDOM_FLOAT(-3, 3), 0);
-#else
-	// TODO: fix test demo
-	vec.y = vec.y + RANDOM_FLOAT(-3.0, 3.0);
-	vec.x = vec.x + RANDOM_FLOAT(-3.0, 3.0);
-
-#endif // PLAY_GAMEDLL
-
 	pev->velocity = pev->velocity + (vec.Normalize() * 100);
 }
 

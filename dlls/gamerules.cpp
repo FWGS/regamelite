@@ -32,13 +32,7 @@ edict_t *CGameRules::GetPlayerSpawnSpot(CBasePlayer *pPlayer)
 	edict_t *pentSpawnSpot = EntSelectSpawnPoint(pPlayer);
 
 	// Move the player to the place it said.
-#ifndef PLAY_GAMEDLL
 	pPlayer->pev->origin = VARS(pentSpawnSpot)->origin + Vector(0, 0, 1);
-#else
-	// TODO: fix test demo
-	pPlayer->pev->origin = VARS(pentSpawnSpot)->origin;
-	pPlayer->pev->origin.z += 1;
-#endif // PLAY_GAMEDLL
 
 	pPlayer->pev->v_angle = g_vecZero;
 	pPlayer->pev->velocity = g_vecZero;

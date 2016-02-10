@@ -520,7 +520,7 @@ void InitBotTrig()
 {
 	for (int i = 0; i < COS_TABLE_SIZE; ++i)
 	{
-		float_precision angle = 2.0f * M_PI * (float)i / (float)(COS_TABLE_SIZE - 1);
+		float angle = 2.0f * M_PI * (float)i / (float)(COS_TABLE_SIZE - 1);
 		cosTable[i] = cos(angle);
 	}
 }

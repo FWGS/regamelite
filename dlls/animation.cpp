@@ -542,8 +542,8 @@ C_DLLEXPORT int Server_GetBlendingInterface(int version, struct sv_blending_inte
 
 void AngleQuaternion(vec_t *angles, vec_t *quaternion)
 {
-	float_precision sy, cy, sp_, cp;
-	float_precision angle;
+	float sy, cy, sp_, cp;
+	float angle;
 	float sr, cr;
 
 	float ftmp0;
@@ -576,8 +576,8 @@ void AngleQuaternion(vec_t *angles, vec_t *quaternion)
 void QuaternionSlerp(vec_t *p, vec_t *q, float t, vec_t *qt)
 {
 	int i;
-	float_precision a = 0;
-	float_precision b = 0;
+	float a = 0;
+	float b = 0;
 
 	for (i = 0; i < 4; ++i)
 	{
@@ -598,13 +598,13 @@ void QuaternionSlerp(vec_t *p, vec_t *q, float t, vec_t *qt)
 	{
 		if ((1.0 - cosom) > 0.00000001)
 		{
-			float_precision cosomega = acos((float_precision)cosom);
+			float cosomega = acos((float)cosom);
 
 			float omega = cosomega;
 			float sinom = sin(cosomega);
 
 			sclp = sin((1.0 - t) * omega) / sinom;
-			sclq = sin((float_precision)(omega * t)) / sinom;
+			sclq = sin((float)(omega * t)) / sinom;
 		}
 		else
 		{
@@ -943,18 +943,18 @@ void ConcatTransforms(float in1[3][4], float in2[3][4], float out[3][4])
 	out[2][3] = in1[2][0] * in2[0][3] + in1[2][1] * in2[1][3] + in1[2][2] * in2[2][3] + in1[2][3];
 }
 
-float_precision StudioEstimateFrame(float frame, mstudioseqdesc_t *pseqdesc)
+float StudioEstimateFrame(float frame, mstudioseqdesc_t *pseqdesc)
 {
 	if (pseqdesc->numframes <= 1)
 		return 0;
 
-	return (float_precision)(pseqdesc->numframes - 1) * frame / 256;
+	return (float)(pseqdesc->numframes - 1) * frame / 256;
 }
 
 void SV_StudioSetupBones(model_t *pModel, float frame, int sequence, const vec_t *angles, const vec_t *origin, const byte *pcontroller, const byte *pblending, int iBone, const edict_t *pEdict)
 {
 	int i, j;
-	float_precision f;
+	float f;
 	float subframe;
 	float adj[MAXSTUDIOCONTROLLERS];
 	mstudiobone_t *pbones;
@@ -1007,7 +1007,7 @@ void SV_StudioSetupBones(model_t *pModel, float frame, int sequence, const vec_t
 	{
 		if (pseqdesc->numblends > 1)
 		{
-			float b = (float_precision)pblending[0] / 255.0f;
+			float b = (float)pblending[0] / 255.0f;
 			
 			pseqdesc = (mstudioseqdesc_t *)((byte *)g_pstudiohdr + g_pstudiohdr->seqindex) + sequence;
 			panim = StudioGetAnim(pModel, pseqdesc);
@@ -1023,7 +1023,7 @@ void SV_StudioSetupBones(model_t *pModel, float frame, int sequence, const vec_t
 		/*static */float pos3[MAXSTUDIOBONES][3], pos4[MAXSTUDIOBONES][3];
 		/*static */float q3[MAXSTUDIOBONES][4], q4[MAXSTUDIOBONES][4];
 		
-		float_precision s, t;
+		float s, t;
 
 		s = GetPlayerYaw(pEdict);
 		t = GetPlayerPitch(pEdict);

@@ -984,7 +984,7 @@ void CPushable::Move(CBaseEntity *pOther, int push)
 		playerTouch = 1;
 	}
 
-	float_precision factor;
+	float factor;
 
 	if (playerTouch)
 	{
@@ -1005,7 +1005,7 @@ void CPushable::Move(CBaseEntity *pOther, int push)
 	pev->velocity.x += pevToucher->velocity.x * factor;
 	pev->velocity.y += pevToucher->velocity.y * factor;
 
-	float_precision length = sqrt(pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y);
+	float length = sqrt(pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y);
 
 	if (push && (length > MaxSpeed()))
 	{

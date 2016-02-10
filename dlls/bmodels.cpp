@@ -135,7 +135,7 @@ void CFuncConveyor::Spawn()
 void CFuncConveyor::UpdateSpeed(float speed)
 {
 	// Encode it as an integer with 4 fractional bits
-	int speedCode = (int)(fabs((float_precision)speed) * 16.0);
+	int speedCode = (int)(fabs((float)speed) * 16.0);
 
 	if (speed < 0)
 		pev->rendercolor.x = 1;
@@ -434,9 +434,9 @@ void CFuncRotating::HurtTouch(CBaseEntity *pOther)
 void CFuncRotating::RampPitchVol(int fUp)
 {
 	Vector vecAVel = pev->avelocity;
-	float_precision vecCur;
-	float_precision vecFinal;
-	float_precision fpct;
+	float vecCur;
+	float vecFinal;
+	float fpct;
 	float fvol;
 	float fpitch;
 	int pitch;
@@ -646,7 +646,7 @@ void CPendulum::Spawn()
 		pev->speed = 100;
 
 	// Calculate constant acceleration from speed and distance
-	m_accel = (pev->speed * pev->speed) / (2 * fabs((float_precision)m_distance));
+	m_accel = (pev->speed * pev->speed) / (2 * fabs((float)m_distance));
 	m_maxSpeed = pev->speed;
 	m_start = pev->angles;
 	m_center = pev->angles + (m_distance * 0.5) * pev->movedir;
@@ -673,7 +673,7 @@ void CPendulum::PendulumUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 	{
 		if (pev->spawnflags & SF_PENDULUM_AUTO_RETURN)
 		{
-			float_precision delta;
+			float delta;
 
 			delta = CBaseToggle::AxisDelta(pev->spawnflags, pev->angles, m_start);
 

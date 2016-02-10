@@ -481,7 +481,7 @@ void CCSBot::UpdateLookAround(bool updateNow)
 			// TODO: Use skill parameter instead of accuracy
 
 			// lower skills have exponentially longer delays
-			float_precision asleep = (1.0f - GetProfile()->GetSkill());
+			float asleep = (1.0f - GetProfile()->GetSkill());
 			asleep *= asleep;
 			asleep *= asleep;
 
@@ -489,10 +489,10 @@ void CCSBot::UpdateLookAround(bool updateNow)
 
 			// figure out how far along the path segment we are
 			Vector delta = m_spotEncounter->path.to - m_spotEncounter->path.from;
-			float_precision length = delta.Length();
+			float length = delta.Length();
 			float adx = (float)abs(int64(delta.x));
 			float ady = (float)abs(int64(delta.y));
-			float_precision t;
+			float t;
 
 			if (adx > ady)
 				t = (pev->origin.x - m_spotEncounter->path.from.x) / delta.x;

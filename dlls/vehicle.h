@@ -61,7 +61,7 @@ public:
 	void EXPORT Find();
 };
 
-float_precision Fix2(float angle);
+float Fix2(float angle);
 void FixupAngles2(Vector &v);
 
 #endif // VEHICLE_H

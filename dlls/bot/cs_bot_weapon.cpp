@@ -34,18 +34,18 @@ void CCSBot::FireWeaponAtEnemy()
 			Vector2D toAimSpot = (m_aimSpot - pev->origin).Make2D();
 			float rangeToEnemy = toAimSpot.NormalizeInPlace();
 
-			const float_precision halfPI = (M_PI / 180.0f);
-			float_precision yaw = pev->v_angle[ YAW ] * halfPI;
+			const float halfPI = (M_PI / 180.0f);
+			float yaw = pev->v_angle[ YAW ] * halfPI;
 
 			Vector2D dir(cos(yaw), sin(yaw));
-			float_precision onTarget = DotProduct(toAimSpot, dir);
+			float onTarget = DotProduct(toAimSpot, dir);
 
 			// aim more precisely with a sniper rifle
 			// because rifles' bullets spray, dont have to be very precise
-			const float_precision halfSize = (IsUsingSniperRifle()) ? HalfHumanWidth : 2.0f * HalfHumanWidth;
+			const float halfSize = (IsUsingSniperRifle()) ? HalfHumanWidth : 2.0f * HalfHumanWidth;
 
 			// aiming tolerance depends on how close the target is - closer targets subtend larger angles
-			float_precision aimTolerance = cos(atan(halfSize / rangeToEnemy));
+			float aimTolerance = cos(atan(halfSize / rangeToEnemy));
 
 			if (onTarget > aimTolerance)
 			{
@@ -179,7 +179,7 @@ void CCSBot::SetAimOffset(float accuracy)
 	PrintIfWatched("Accuracy = %4.3f\n", accuracy);
 
 	float range = (m_lastEnemyPosition - pev->origin).Length();
-	const float_precision maxOffset = range * ((float_precision)m_iFOV / DEFAULT_FOV) * 0.1;
+	const float maxOffset = range * ((float)m_iFOV / DEFAULT_FOV) * 0.1;
 	float error = maxOffset * (1 - accuracy);
 
 	m_aimOffsetGoal[0] = RANDOM_FLOAT(-error, error);

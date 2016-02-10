@@ -1638,7 +1638,7 @@ public:
 			if (area->GetAttributes() & NAV_CROUCH)
 			{
 				// these areas are very slow to move through
-				float_precision crouchPenalty = (m_route == FASTEST_ROUTE) ? 20.0f : 5.0f;
+				float crouchPenalty = (m_route == FASTEST_ROUTE) ? 20.0f : 5.0f;
 
 				// avoid crouch areas if we are rescuing hostages
 				if (m_bot->GetHostageEscortCount())
@@ -1713,7 +1713,7 @@ public:
 		else
 		{
 			const float k = 1.5f;
-			float_precision trimSpeed = (speed < 200.0f) ? speed : 200.0f;
+			float trimSpeed = (speed < 200.0f) ? speed : 200.0f;
 
 			m_cutoff.x = player->pev->origin.x + k * trimSpeed * m_forward.x;
 			m_cutoff.y = player->pev->origin.y + k * trimSpeed * m_forward.y;

@@ -643,11 +643,11 @@ int CCSBot::FindOurPositionOnPath(Vector *close, bool local) const
 	Vector eyes = feet + Vector(0, 0, HalfHumanHeight); // in case we're crouching
 	Vector pos;
 	const Vector *from, *to;
-	float_precision length;
+	float length;
 	float closeLength;
 	float closeDistSq = 9999999999.9;
 	int closeIndex = -1;
-	float_precision distSq;
+	float distSq;
 
 	int start, end;
 
@@ -1064,7 +1064,7 @@ float CCSBot::GetApproximateFallDamage(float height) const
 	const float slope = 0.2178f;
 	const float intercept = 26.0f;
 
-	float_precision damage = slope * height - intercept;
+	float damage = slope * height - intercept;
 
 	if (damage < 0.0f)
 		return 0.0f;

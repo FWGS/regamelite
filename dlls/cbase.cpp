@@ -554,7 +554,7 @@ void EXT_FUNC DispatchSave(edict_t *pent, SAVERESTOREDATA *pSaveData)
 		// These don't use ltime & nextthink as times really, but we'll fudge around it.
 		if (pEntity->pev->movetype == MOVETYPE_PUSH)
 		{
-			float_precision delta = pEntity->pev->nextthink - pEntity->pev->ltime;
+			float delta = pEntity->pev->nextthink - pEntity->pev->ltime;
 			pEntity->pev->ltime = gpGlobals->time;
 			pEntity->pev->nextthink = pEntity->pev->ltime + delta;
 		}
@@ -829,7 +829,7 @@ int CBaseEntity::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
 		vecDir = vecDir.Normalize();
 
-		float_precision flForce = flDamage * ((32 * 32 * 72.0) / (pev->size.x * pev->size.y * pev->size.z)) * 5;
+		float flForce = flDamage * ((32 * 32 * 72.0) / (pev->size.x * pev->size.y * pev->size.z)) * 5;
 
 		if (flForce > 1000.0)
 			flForce = 1000.0;
@@ -914,19 +914,19 @@ void SetObjectCollisionBox(entvars_t *pev)
 	if ((pev->solid == SOLID_BSP) && (pev->angles.x || pev->angles.y || pev->angles.z))
 	{
 		// expand for rotation
-		float_precision max, v;
+		float max, v;
 		int i;
 
 		max = 0;
 		for (i = 0; i < 3; ++i)
 		{
-			v = fabs((float_precision)((float *)pev->mins)[i]);
+			v = fabs((float)((float *)pev->mins)[i]);
 			if (v > max)
 			{
 				max = v;
 			}
 
-			v = fabs((float_precision)((float *)pev->maxs)[i]);
+			v = fabs((float)((float *)pev->maxs)[i]);
 			if (v > max)
 			{
 				max = v;

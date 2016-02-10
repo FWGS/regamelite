@@ -372,7 +372,7 @@ void CFuncTank::Think()
 	pev->avelocity = g_vecZero;
 	TrackTarget();
 
-	if (fabs((float_precision)pev->avelocity.x) > 1 || fabs((float_precision)pev->avelocity.y) > 1)
+	if (fabs((float)pev->avelocity.x) > 1 || fabs((float)pev->avelocity.y) > 1)
 		StartRotSound();
 	else
 		StopRotSound();
@@ -480,7 +480,7 @@ void CFuncTank::TrackTarget()
 	}
 
 	// Move toward target at rate or less
-	float_precision distY = UTIL_AngleDistance(angles.y, pev->angles.y);
+	float distY = UTIL_AngleDistance(angles.y, pev->angles.y);
 	pev->avelocity.y = distY * 10.0f;
 
 	if (pev->avelocity.y > m_yawRate)
@@ -503,7 +503,7 @@ void CFuncTank::TrackTarget()
 	}
 
 	// Move toward target at rate or less
-	float_precision distX = UTIL_AngleDistance(angles.x, pev->angles.x);
+	float distX = UTIL_AngleDistance(angles.x, pev->angles.x);
 	pev->avelocity.x = distX  * 10.0f;
 
 	if (pev->avelocity.x > m_pitchRate)
@@ -554,7 +554,7 @@ void CFuncTank::TrackTarget()
 
 void CFuncTank::AdjustAnglesForBarrel(Vector &angles, float distance)
 {
-	float_precision r2, d2;
+	float r2, d2;
 
 	if (m_barrelPos.y != 0.0f || m_barrelPos.z != 0.0f)
 	{
@@ -613,7 +613,7 @@ void CFuncTank::TankTrace(const Vector &vecStart, const Vector &vecForward, cons
 {
 	// get circular gaussian spread
 	float x, z;
-	float_precision y;
+	float y;
 
 	do
 	{

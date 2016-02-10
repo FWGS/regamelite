@@ -161,7 +161,7 @@ void HuntState::OnUpdate(CCSBot *me)
 				continue;
 
 			// keep track of the least recently cleared area
-			float_precision age = gpGlobals->time - area->GetClearedTimestamp(me->m_iTeam - 1);
+			float age = gpGlobals->time - area->GetClearedTimestamp(me->m_iTeam - 1);
 			if (age > oldest)
 			{
 				oldest = age;

@@ -679,7 +679,7 @@ void CTriggerHurt::RadiationThink()
 {
 	edict_t *pentPlayer;
 	CBasePlayer *pPlayer = NULL;
-	float_precision flRange;
+	float flRange;
 	entvars_t *pevTarget;
 	Vector vecSpot1;
 	Vector vecSpot2;
@@ -2141,8 +2141,8 @@ void CTriggerCamera::FollowTarget()
 	if (pev->angles.y < 0)
 		pev->angles.y += 360;
 
-	float_precision dx = vecGoal.x - pev->angles.x;
-	float_precision dy = vecGoal.y - pev->angles.y;
+	float dx = vecGoal.x - pev->angles.x;
+	float dy = vecGoal.y - pev->angles.y;
 
 	if (dx < -180)
 		dx += 360;
@@ -2225,7 +2225,7 @@ void CTriggerCamera::Move()
 		pev->speed = UTIL_Approach(m_targetSpeed, pev->speed, m_acceleration * gpGlobals->frametime);
 	}
 
-	float_precision fraction = 2 * gpGlobals->frametime;
+	float fraction = 2 * gpGlobals->frametime;
 	pev->velocity = ((pev->movedir * pev->speed) * fraction) + (pev->velocity * (1 - fraction));
 }
 

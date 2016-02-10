@@ -704,7 +704,7 @@ bool CBasePlayerWeapon::ShieldSecondaryFire(int iUpAnim, int iDownAnim)
 
 void CBasePlayerWeapon::KickBack(float up_base, float lateral_base, float up_modifier, float lateral_modifier, float up_max, float lateral_max, int direction_change)
 {
-	float_precision flKickUp;
+	float flKickUp;
 	float flKickLateral;
 
 	if (m_iShotsFired == 1)
@@ -2072,7 +2072,7 @@ void CArmoury::Restart()
 			return;
 		}
 
-		float flRatio = (float_precision)(m_iInitialCount / mp->m_iTotalGrenadeCount) * (float_precision)mp->m_iNumTerrorist * 1.75;
+		float flRatio = (float)(m_iInitialCount / mp->m_iTotalGrenadeCount) * (float)mp->m_iNumTerrorist * 1.75;
 		m_iCount = (int)flRatio;
 	}
 	else if (m_iItem == ARMOURY_KEVLAR || m_iItem == ARMOURY_ASSAULT)
@@ -2086,7 +2086,7 @@ void CArmoury::Restart()
 			return;
 		}
 
-		float flRatio = (float_precision)(m_iInitialCount / mp->m_iTotalArmourCount) * (float_precision)mp->m_iNumTerrorist;
+		float flRatio = (float)(m_iInitialCount / mp->m_iTotalArmourCount) * (float)mp->m_iNumTerrorist;
 		m_iCount = (int)flRatio;
 	}
 	else
@@ -2100,7 +2100,7 @@ void CArmoury::Restart()
 			return;
 		}
 
-		float flRatio = (float_precision)(m_iInitialCount / mp->m_iTotalGunCount) * (float_precision)mp->m_iNumTerrorist * 0.85;
+		float flRatio = (float)(m_iInitialCount / mp->m_iTotalGunCount) * (float)mp->m_iNumTerrorist * 0.85;
 		m_iCount = (int)flRatio;
 	}
 

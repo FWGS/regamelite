@@ -94,7 +94,7 @@ int PM_ClipVelocity(vec_t *in, vec_t *normal, vec_t *out, float overbounce);
 void PM_AddCorrectGravity();
 void PM_FixupGravityVelocity();
 int PM_FlyMove();
-void PM_Accelerate(vec_t *wishdir, float_precision wishspeed, float accel);
+void PM_Accelerate(vec_t *wishdir, float wishspeed, float accel);
 void PM_WalkMove();
 void PM_Friction();
 void PM_AirAccelerate(vec_t *wishdir, float wishspeed, float accel);

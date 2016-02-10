@@ -601,11 +601,11 @@ int CNavPathFollower::FindOurPositionOnPath(Vector *close, bool local) const
 	Vector eyes = m_improv->GetEyes();
 	Vector pos;
 	const Vector *from, *to;
-	float_precision length;
+	float length;
 	float closeLength;
 	float closeDistSq = 1.0e10;
 	int closeIndex = -1;
-	float_precision distSq;
+	float distSq;
 	int start, end;
 
 	if (!m_path->IsValid())
@@ -930,18 +930,7 @@ void CNavPathFollower::FeelerReflexAdjustment(Vector *goalPosition, float height
 
 	Vector dir(BotCOS(m_improv->GetMoveAngle()), BotSIN(m_improv->GetMoveAngle()), 0.0f);
 	dir.z = 0.0f;
-
-#ifndef PLAY_GAMEDLL
 	dir.NormalizeInPlace();
-#else
-	// TODO: fix test demo
-	float_precision flLen = dir.Length();
-
-	if (flLen > 0)
-		dir = dir * (float)(1 / flLen);
-	else
-		dir = Vector(0, 0, 0);
-#endif // PLAY_GAMEDLL
 
 	Vector lat(-dir.y, dir.x, 0.0f);
 
@@ -998,7 +987,7 @@ void CNavPathFollower::FeelerReflexAdjustment(Vector *goalPosition, float height
 			UTIL_DrawBeamPoints(from, to, 1, 255, 0, 0);
 	}
 
-	const float_precision avoidRange = (m_improv->IsCrouching()) ? 150.0f : 300.0f;
+	const float avoidRange = (m_improv->IsCrouching()) ? 150.0f : 300.0f;
 
 	if (!rightClear)
 	{
