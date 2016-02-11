@@ -1,15 +1,5 @@
 #include "precompiled.h"
 
-// STL uses exceptions, but we are not compiling with them - ignore warning
-#pragma warning(disable : 4530)
-
-// long STL names get truncated in browse info.
-#pragma warning(disable : 4786)
-
-#include <list>
-#include <vector>
-#include <algorithm>
-
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <assert.h>
@@ -42,7 +32,6 @@ CNavArea *CNavArea::m_openList = NULL;
 bool CNavArea::m_isReset = false;
 
 float lastDrawTimestamp = 0.0f;
-NavAreaList goodSizedAreaList;
 
 CNavArea *markedArea = NULL;
 CNavArea *lastSelectedArea = NULL;
@@ -60,40 +49,23 @@ float editTimestamp = 0.0f;
 unsigned int BlockedID[ MAX_BLOCKED_AREAS ];
 int BlockedIDCount = 0;
 
-NOXREF void buildGoodSizedList()
-{
-	const float minSize = 200.0f;
-
-	NavAreaList::iterator iter;
-	for (iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); iter++)
-	{
-		CNavArea *area = *iter;
-
-		// skip the small areas
-		const Extent *extent = area->GetExtent();
-		if (extent->SizeX() < minSize || extent->SizeY() < minSize)
-			continue;
-
-		goodSizedAreaList.push_back(area);
-	}
-}
-
 void DestroyHidingSpots()
 {
 	// remove all hiding spot references from the nav areas
-	for (NavAreaList::iterator areaIter = TheNavAreaList.begin(); areaIter != TheNavAreaList.end(); areaIter++)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *areaIter;
-		area->m_hidingSpotList.clear();
+		CNavArea *area = TheNavAreaList[it];
+		area->m_hidingSpotList.RemoveAll ();
 	}
 
 	HidingSpot::m_nextID = 0;
 
 	// free all the HidingSpots
-	for (HidingSpotList::iterator iter = TheHidingSpotList.begin(); iter != TheHidingSpotList.end(); iter++)
-		delete *iter;
-
-	TheHidingSpotList.clear();
+	FOR_EACH_LL (TheHidingSpotList, it)
+	{
+		delete TheHidingSpotList[it];
+	}
+	TheHidingSpotList.RemoveAll ();
 }
 
 // For use when loading from a file
@@ -104,7 +76,7 @@ HidingSpot::HidingSpot()
 	m_id = 0;
 	m_flags = 0;
 
-	TheHidingSpotList.push_back(this);
+	TheHidingSpotList.AddToTail(this);
 }
 
 // For use when generating - assigns unique ID
@@ -115,7 +87,7 @@ HidingSpot::HidingSpot(const Vector *pos, unsigned char flags)
 	m_id = m_nextID++;
 	m_flags = flags;
 
-	TheHidingSpotList.push_back(this);
+	TheHidingSpotList.AddToTail(this);
 }
 
 void HidingSpot::Save(int fd, unsigned int version) const
@@ -140,9 +112,9 @@ void HidingSpot::Load(SteamFile *file, unsigned int version)
 
 HidingSpot *GetHidingSpotByID(unsigned int id)
 {
-	for (HidingSpotList::iterator iter = TheHidingSpotList.begin(); iter != TheHidingSpotList.end(); ++iter)
+	FOR_EACH_LL (TheHidingSpotList, it)
 	{
-		HidingSpot *spot = *iter;
+		HidingSpot *spot = TheHidingSpotList[it];
 
 		if (spot->GetID() == id)
 			return spot;
@@ -272,10 +244,9 @@ CNavArea::~CNavArea()
 		return;
 
 	// tell the other areas we are going away
-	NavAreaList::iterator iter;
-	for (iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *iter;
+		CNavArea *area = TheNavAreaList[it];
 
 		if (area == this)
 			continue;
@@ -286,9 +257,9 @@ CNavArea::~CNavArea()
 	// unhook from ladders
 	for (int i = 0; i < NUM_LADDER_DIRECTIONS; ++i)
 	{
-		for (NavLadderList::iterator liter = m_ladder[i].begin(); liter != m_ladder[i].end(); ++liter)
+		FOR_EACH_LL (m_ladder[i], it)
 		{
-			CNavLadder *ladder = *liter;
+			CNavLadder *ladder = m_ladder[i][it];
 			ladder->OnDestroyNotify(this);
 		}
 	}
@@ -305,9 +276,9 @@ void CNavArea::OnDestroyNotify(CNavArea *dead)
 	NavConnect con;
 	con.area = dead;
 	for (int d = 0; d < NUM_DIRECTIONS; ++d)
-		m_connect[d].remove(con);
+		m_connect[d].FindAndRemove(con);
 
-	m_overlapList.remove(dead);
+	m_overlapList.FindAndRemove(dead);
 }
 
 // Connect this area to given area in given direction
@@ -315,15 +286,15 @@ void CNavArea::OnDestroyNotify(CNavArea *dead)
 void CNavArea::ConnectTo(CNavArea *area, NavDirType dir)
 {
 	// check if already connected
-	for (NavConnectList::iterator iter = m_connect[dir].begin(); iter != m_connect[dir].end(); ++iter)
+	FOR_EACH_LL (m_connect[dir], it)
 	{
-		if ((*iter).area == area)
+		if (m_connect[dir][it].area == area)
 			return;
 	}
 
 	NavConnect con;
 	con.area = area;
-	m_connect[dir].push_back(con);
+	m_connect[dir].AddToTail(con);
 
 	//static char *dirName[] = { "NORTH", "EAST", "SOUTH", "WEST" };
 	//CONSOLE_ECHO("  Connected area #%d to #%d, %s\n", m_id, area->m_id, dirName[ dir ]);
@@ -337,7 +308,7 @@ void CNavArea::Disconnect(CNavArea *area)
 	connect.area = area;
 
 	for (int dir = 0; dir<NUM_DIRECTIONS; dir++)
-		m_connect[dir].remove(connect);
+		m_connect[dir].FindAndRemove(connect);
 }
 
 // Recompute internal data once nodes have been adjusted during merge
@@ -363,7 +334,7 @@ void CNavArea::FinishMerge(CNavArea *adjArea)
 	MergeAdjacentConnections(adjArea);
 
 	// remove subsumed adjacent area
-	TheNavAreaList.remove(adjArea);
+	TheNavAreaList.FindAndRemove(adjArea);
 	delete adjArea;
 }
 
@@ -372,13 +343,12 @@ void CNavArea::FinishMerge(CNavArea *adjArea)
 void CNavArea::MergeAdjacentConnections(CNavArea *adjArea)
 {
 	// merge adjacency links - we gain all the connections that adjArea had
-	NavConnectList::iterator iter;
 	int dir;
 	for (dir = 0; dir<NUM_DIRECTIONS; ++dir)
 	{
-		for (iter = adjArea->m_connect[ dir ].begin(); iter != adjArea->m_connect[ dir ].end(); ++iter)
+		FOR_EACH_LL (adjArea->m_connect[dir], it)
 		{
-			NavConnect connect = *iter;
+			NavConnect connect = adjArea->m_connect[dir][it];
 
 			if (connect.area != adjArea && connect.area != this)
 				ConnectTo(connect.area, (NavDirType)dir);
@@ -391,7 +361,7 @@ void CNavArea::MergeAdjacentConnections(CNavArea *adjArea)
 		NavConnect connect;
 		connect.area = adjArea;
 
-		m_connect[dir].remove(connect);
+		m_connect[dir].FindAndRemove(connect);
 	}
 
 	// Change other references to adjArea to refer instead to us
@@ -400,9 +370,9 @@ void CNavArea::MergeAdjacentConnections(CNavArea *adjArea)
 	// into the merged area, one for each of the adjacent subsumed smaller ones.
 	// If an area has a connection to the merged area, we must remove all references to adjArea, and add
 	// a single connection to us.
-	for (NavAreaList::iterator areaIter = TheNavAreaList.begin(); areaIter != TheNavAreaList.end(); ++areaIter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *areaIter;
+		CNavArea *area = TheNavAreaList[it];
 
 		if (area == this || area == adjArea)
 			continue;
@@ -411,9 +381,9 @@ void CNavArea::MergeAdjacentConnections(CNavArea *adjArea)
 		{
 			// check if there are any references to adjArea in this direction
 			bool connected = false;
-			for (iter = area->m_connect[ dir ].begin(); iter != area->m_connect[ dir ].end(); ++iter)
+			FOR_EACH_LL (area->m_connect[dir], it)
 			{
-				NavConnect connect = *iter;
+				NavConnect connect = area->m_connect[dir][it];
 
 				if (connect.area == adjArea)
 				{
@@ -427,15 +397,15 @@ void CNavArea::MergeAdjacentConnections(CNavArea *adjArea)
 				// remove all references to adjArea
 				NavConnect connect;
 				connect.area = adjArea;
-				area->m_connect[dir].remove(connect);
+				area->m_connect[dir].FindAndRemove(connect);
 
 				// remove all references to the new area
 				connect.area = this;
-				area->m_connect[dir].remove(connect);
+				area->m_connect[dir].FindAndRemove(connect);
 
 				// add a single connection to the new area
 				connect.area = this;
-				area->m_connect[dir].push_back(connect);
+				area->m_connect[dir].AddToTail(connect);
 			}
 		}
 	}
@@ -559,7 +529,7 @@ bool CNavArea::SplitEdit(bool splitAlongX, float splitEdge, CNavArea **outAlpha,
 		*outBeta = beta;
 
 	// remove original area
-	TheNavAreaList.remove(this);
+	TheNavAreaList.FindAndRemove(this);
 	delete this;
 
 	return true;
@@ -575,33 +545,30 @@ bool CNavArea::IsConnected(const CNavArea *area, NavDirType dir) const
 	if (area == this)
 		return true;
 
-	NavConnectList::const_iterator iter;
-
 	if (dir == NUM_DIRECTIONS)
 	{
 		// search all directions
 		for (int d = 0; d < NUM_DIRECTIONS; ++d)
 		{
-			for (iter = m_connect[ d ].begin(); iter != m_connect[ d ].end(); ++iter)
+			FOR_EACH_LL (m_connect[d], it)
 			{
-				if (area == (*iter).area)
+				if (area == m_connect[d][it].area)
 					return true;
 			}
 		}
 
 		// check ladder connections
-		NavLadderList::const_iterator liter;
-		for (liter = m_ladder[ LADDER_UP ].begin(); liter != m_ladder[ LADDER_UP ].end(); ++liter)
+		FOR_EACH_LL (m_ladder[LADDER_UP], it)
 		{
-			CNavLadder *ladder = *liter;
+			CNavLadder *ladder = m_ladder[LADDER_UP][it];
 
 			if (ladder->m_topBehindArea == area || ladder->m_topForwardArea == area || ladder->m_topLeftArea == area || ladder->m_topRightArea == area)
 				return true;
 		}
 
-		for (liter = m_ladder[ LADDER_DOWN ].begin(); liter != m_ladder[ LADDER_DOWN ].end(); ++liter)
+		FOR_EACH_LL (m_ladder[LADDER_DOWN], it)
 		{
-			CNavLadder *ladder = *liter;
+			CNavLadder *ladder = m_ladder[LADDER_DOWN][it];
 
 			if (ladder->m_bottomArea == area)
 				return true;
@@ -610,9 +577,9 @@ bool CNavArea::IsConnected(const CNavArea *area, NavDirType dir) const
 	else
 	{
 		// check specific direction
-		for (iter = m_connect[ dir ].begin(); iter != m_connect[ dir ].end(); ++iter)
+		FOR_EACH_LL (m_connect[dir], it)
 		{
-			if (area == (*iter).area)
+			if (area == m_connect[dir][it].area)
 				return true;
 		}
 	}
@@ -684,7 +651,7 @@ void CNavArea::FinishSplitEdit(CNavArea *newArea, NavDirType ignoreEdge)
 		}
 	}
 
-	TheNavAreaList.push_back(newArea);
+	TheNavAreaList.AddToTail(newArea);
 	TheNavAreaGrid.AddNavArea(newArea);
 }
 
@@ -846,7 +813,7 @@ bool CNavArea::SpliceEdit(CNavArea *other)
 			newArea->SetPlace(other->GetPlace());
 	}
 
-	TheNavAreaList.push_back(newArea);
+	TheNavAreaList.AddToTail(newArea);
 	TheNavAreaGrid.AddNavArea(newArea);
 
 	return true;
@@ -897,33 +864,16 @@ bool CNavArea::MergeEdit(CNavArea *adj)
 	MergeAdjacentConnections(adj);
 
 	// remove subsumed adjacent area
-	TheNavAreaList.remove(adj);
+	TheNavAreaList.FindAndRemove(adj);
 	delete adj;
 
 	return true;
 }
 
-void ApproachAreaAnalysisPrep()
-{
-	// collect "good-sized" areas for computing approach areas
-	buildGoodSizedList();
-}
-
-void CleanupApproachAreaAnalysisPrep()
-{
-	goodSizedAreaList.clear();
-}
-
 // Destroy ladder representations
-
 void DestroyLadders()
 {
-	while (!TheNavLadderList.empty())
-	{
-		CNavLadder *ladder = TheNavLadderList.front();
-		TheNavLadderList.pop_front();
-		delete ladder;
-	}
+	TheNavLadderList.PurgeAndDeleteElements ();
 }
 
 // Free navigation map data
@@ -933,12 +883,7 @@ void DestroyNavigationMap()
 	CNavArea::m_isReset = true;
 
 	// remove each element of the list and delete them
-	while (!TheNavAreaList.empty())
-	{
-		CNavArea *area = TheNavAreaList.front();
-		TheNavAreaList.pop_front();
-		delete area;
-	}
+	TheNavAreaList.PurgeAndDeleteElements ();
 
 	CNavArea::m_isReset = false;
 
@@ -966,9 +911,9 @@ void DestroyNavigationMap()
 
 void StripNavigationAreas()
 {
-	for (NavAreaList::iterator iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *iter;
+		CNavArea *area = TheNavAreaList[it];
 		area->Strip();
 	}
 }
@@ -978,7 +923,7 @@ void StripNavigationAreas()
 void CNavArea::Strip()
 {
 	m_approachCount = 0;
-	m_spotEncounterList.clear();	// memory leak
+	m_spotEncounterList.PurgeAndDeleteElements();	// memory leak
 }
 
 // Start at given position and find first area in given direction
@@ -1079,9 +1024,9 @@ void ConnectGeneratedAreas()
 {
 	CONSOLE_ECHO("  Connecting navigation areas...\n");
 
-	for (NavAreaList::iterator iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *iter;
+		CNavArea *area = TheNavAreaList[it];
 
 		// scan along edge nodes, stepping one node over into the next area
 		// for now, only use bi-directional connections
@@ -1185,15 +1130,14 @@ void MergeGeneratedAreas()
 	{
 		merged = false;
 
-		for (NavAreaList::iterator iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+		FOR_EACH_LL (TheNavAreaList, it)
 		{
-			CNavArea *area = *iter;
+			CNavArea *area = TheNavAreaList[it];
 
 			// north edge
-			NavConnectList::iterator citer;
-			for (citer = area->m_connect[ NORTH ].begin(); citer != area->m_connect[ NORTH ].end(); ++citer)
+			FOR_EACH_LL (area->m_connect[NORTH], it)
 			{
-				CNavArea *adjArea = (*citer).area;
+				CNavArea *adjArea = area->m_connect[NORTH][it].area;
 
 				if (area->m_node[ NORTH_WEST ] == adjArea->m_node[ SOUTH_WEST ] &&
 						area->m_node[ NORTH_EAST ] == adjArea->m_node[ SOUTH_EAST ] &&
@@ -1218,9 +1162,9 @@ void MergeGeneratedAreas()
 				break;
 
 			// south edge
-			for (citer = area->m_connect[ SOUTH ].begin(); citer != area->m_connect[ SOUTH ].end(); ++citer)
+			FOR_EACH_LL (area->m_connect[SOUTH], it)
 			{
-				CNavArea *adjArea = (*citer).area;
+				CNavArea *adjArea = area->m_connect[SOUTH][it].area;
 
 				if (adjArea->m_node[ NORTH_WEST ] == area->m_node[ SOUTH_WEST ] &&
 						adjArea->m_node[ NORTH_EAST ] == area->m_node[ SOUTH_EAST ] &&
@@ -1247,9 +1191,9 @@ void MergeGeneratedAreas()
 
 
 			// west edge
-			for (citer = area->m_connect[ WEST ].begin(); citer != area->m_connect[ WEST ].end(); ++citer)
+			FOR_EACH_LL (area->m_connect[WEST], it)
 			{
-				CNavArea *adjArea = (*citer).area;
+				CNavArea *adjArea = area->m_connect[WEST][it].area;
 
 				if (area->m_node[ NORTH_WEST ] == adjArea->m_node[ NORTH_EAST ] &&
 						area->m_node[ SOUTH_WEST ] == adjArea->m_node[ SOUTH_EAST ] &&
@@ -1275,9 +1219,9 @@ void MergeGeneratedAreas()
 				break;
 
 			// east edge
-			for (citer = area->m_connect[ EAST ].begin(); citer != area->m_connect[ EAST ].end(); ++citer)
+			FOR_EACH_LL (area->m_connect[EAST], it)
 			{
-				CNavArea *adjArea = (*citer).area;
+				CNavArea *adjArea = area->m_connect[EAST][it].area;
 
 				if (adjArea->m_node[ NORTH_WEST ] == area->m_node[ NORTH_EAST ] &&
 						adjArea->m_node[ SOUTH_WEST ] == area->m_node[ SOUTH_EAST ] &&
@@ -1381,12 +1325,14 @@ void SplitY(CNavArea *area)
 
 void SquareUpAreas()
 {
-	NavAreaList::iterator iter = TheNavAreaList.begin();
+	int it = TheNavAreaList.Head ();
 
-	while (iter != TheNavAreaList.end())
+	while (it != TheNavAreaList.InvalidIndex ())
 	{
-		CNavArea *area = *iter;
-		++iter;
+		CNavArea *area = TheNavAreaList[it];
+
+		// move the iterator in case the current area is split and deleted
+		it = TheNavAreaList.Next (it);
 
 		if (!IsAreaRoughlySquare(area))
 		{
@@ -1531,7 +1477,7 @@ int BuildArea(CNavNode *node, int width, int height)
 	}
 
 	CNavArea *area = new CNavArea(nwNode, neNode, seNode, swNode);
-	TheNavAreaList.push_back(area);
+	TheNavAreaList.AddToTail(area);
 
 	// since all internal nodes have the same attributes, set this area's attributes
 	area->SetAttributes(node->GetAttributes());
@@ -1746,7 +1692,7 @@ void BuildLadders()
 		}
 
 		// add ladder to global list
-		TheNavLadderList.push_back(ladder);
+		TheNavLadderList.AddToTail(ladder);
 		entity = UTIL_FindEntityByClassname(entity, "func_ladder");
 	}
 }
@@ -1756,9 +1702,9 @@ void BuildLadders()
 
 void MarkJumpAreas()
 {
-	for (NavAreaList::iterator iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *iter;
+		CNavArea *area = TheNavAreaList[it];
 		Vector u, v;
 
 		// compute our unit surface normal
@@ -1829,10 +1775,9 @@ void GenerateNavigationAreaMesh()
 	extent.hi.y = -9999999999.9f;
 
 	// compute total extent
-	NavAreaList::iterator iter;
-	for (iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *iter;
+		CNavArea *area = TheNavAreaList[it];
 		const Extent *areaExtent = area->GetExtent();
 
 		if (areaExtent->lo.x < extent.lo.x)
@@ -1848,8 +1793,10 @@ void GenerateNavigationAreaMesh()
 	// add the areas to the grid
 	TheNavAreaGrid.Initialize(extent.lo.x, extent.hi.x, extent.lo.y, extent.hi.y);
 
-	for (iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
-		TheNavAreaGrid.AddNavArea(*iter);
+	FOR_EACH_LL (TheNavAreaList, it)
+	{
+		TheNavAreaGrid.AddNavArea (TheNavAreaList[it]);
+	}
 
 	ConnectGeneratedAreas();
 	MergeGeneratedAreas();
@@ -1914,9 +1861,9 @@ bool CNavArea::Contains(const Vector *pos) const
 	if (ourZ > pos->z)
 		return false;
 
-	for (NavAreaList::const_iterator iter = m_overlapList.begin(); iter != m_overlapList.end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		const CNavArea *area = *iter;
+		CNavArea *area = TheNavAreaList[it];
 
 		// skip self
 		if (area == this)
@@ -2162,15 +2109,14 @@ float CNavArea::GetDistanceSquaredToPoint(const Vector *pos) const
 
 CNavArea *CNavArea::GetRandomAdjacentArea(NavDirType dir) const
 {
-	int count = m_connect[ dir ].size();
+	int count = m_connect[ dir ].Count();
 	int which = RANDOM_LONG(0, count - 1);
 
 	int i = 0;
-	NavConnectList::const_iterator iter;
-	for (iter = m_connect[ dir ].begin(); iter != m_connect[ dir ].end(); ++iter)
+	FOR_EACH_LL (m_connect[dir], it)
 	{
 		if (i == which)
-			return (*iter).area;
+			return m_connect[dir][it].area;
 
 		++i;
 	}
@@ -2313,9 +2259,9 @@ void CNavArea::ComputeClosestPointInPortal(const CNavArea *to, NavDirType dir, c
 
 bool CNavArea::IsEdge(NavDirType dir) const
 {
-	for (NavConnectList::const_iterator it = m_connect[ dir ].begin(); it != m_connect[ dir ].end(); ++it)
+	FOR_EACH_LL (m_connect[dir], it)
 	{
-		const NavConnect connect = *it;
+		const NavConnect connect = m_connect[dir][it];
 
 		if (connect.area->IsConnected(this, OppositeDirection(dir)))
 			return false;
@@ -2610,14 +2556,13 @@ const Vector *CNavArea::GetCorner(NavCornerType corner) const
 }
 
 // Returns true if an existing hiding spot is too close to given position
-
 bool CNavArea::IsHidingSpotCollision(const Vector *pos) const
 {
 	const float collisionRange = 30.0f;
 
-	for (HidingSpotList::const_iterator iter = m_hidingSpotList.begin(); iter != m_hidingSpotList.end(); ++iter)
+	FOR_EACH_LL (m_hidingSpotList, it)
 	{
-		const HidingSpot *spot = *iter;
+		const HidingSpot *spot = m_hidingSpotList[it];
 
 		if ((*spot->GetPosition() - *pos).IsLengthLessThan(collisionRange))
 			return true;
@@ -2673,6 +2618,8 @@ void CNavArea::ComputeHidingSpots()
 		float lo, hi;
 	} extent;
 
+	m_hidingSpotList.PurgeAndDeleteElements ();
+
 	// "jump areas" cannot have hiding spots
 	if (GetAttributes() & NAV_JUMP)
 		return;
@@ -2691,9 +2638,9 @@ void CNavArea::ComputeHidingSpots()
 
 		bool isHoriz = (d == NORTH || d == SOUTH) ? true : false;
 
-		for (NavConnectList::iterator iter = m_connect[d].begin(); iter != m_connect[d].end(); ++iter)
+		FOR_EACH_LL (m_connect[d], it)
 		{
-			NavConnect connect = *iter;
+			NavConnect connect = m_connect[d][it];
 
 			// if connection is only one-way, it's a "jump down" connection (ie: a discontinuity that may mean cover)
 			// ignore it
@@ -2758,6 +2705,7 @@ void CNavArea::ComputeHidingSpots()
 		}
 	}
 
+
 	// if a corner count is 2, then it really is a corner (walls on both sides)
 	float offset = 12.5f;
 
@@ -2765,33 +2713,31 @@ void CNavArea::ComputeHidingSpots()
 	{
 		Vector pos = *GetCorner(NORTH_WEST) + Vector(offset,  offset, 0.0f);
 
-		m_hidingSpotList.push_back(new HidingSpot(&pos, (IsHidingSpotInCover(&pos)) ? HidingSpot::IN_COVER : 0));
+		m_hidingSpotList.AddToTail(new HidingSpot(&pos, (IsHidingSpotInCover(&pos)) ? HidingSpot::IN_COVER : 0));
 	}
-
 	if (cornerCount[ NORTH_EAST ] == 2)
 	{
 		Vector pos = *GetCorner(NORTH_EAST) + Vector(-offset,  offset, 0.0f);
 		if (!IsHidingSpotCollision(&pos))
-			m_hidingSpotList.push_back(new HidingSpot(&pos, (IsHidingSpotInCover(&pos)) ? HidingSpot::IN_COVER : 0));
+			m_hidingSpotList.AddToTail(new HidingSpot(&pos, (IsHidingSpotInCover(&pos)) ? HidingSpot::IN_COVER : 0));
 	}
 
 	if (cornerCount[ SOUTH_WEST ] == 2)
 	{
 		Vector pos = *GetCorner(SOUTH_WEST) + Vector(offset, -offset, 0.0f);
 		if (!IsHidingSpotCollision(&pos))
-			m_hidingSpotList.push_back(new HidingSpot(&pos, (IsHidingSpotInCover(&pos)) ? HidingSpot::IN_COVER : 0));
+			m_hidingSpotList.AddToTail(new HidingSpot(&pos, (IsHidingSpotInCover(&pos)) ? HidingSpot::IN_COVER : 0));
 	}
 
 	if (cornerCount[ SOUTH_EAST ] == 2)
 	{
 		Vector pos = *GetCorner(SOUTH_EAST) + Vector(-offset, -offset, 0.0f);
 		if (!IsHidingSpotCollision(&pos))
-			m_hidingSpotList.push_back(new HidingSpot(&pos, (IsHidingSpotInCover(&pos)) ? HidingSpot::IN_COVER : 0));
+			m_hidingSpotList.AddToTail(new HidingSpot(&pos, (IsHidingSpotInCover(&pos)) ? HidingSpot::IN_COVER : 0));
 	}
 }
 
 // Determine how much walkable area we can see from the spot, and how far away we can see.
-
 void ClassifySniperSpot(HidingSpot *spot)
 {
 	// assume we are crouching
@@ -2804,9 +2750,12 @@ void ClassifySniperSpot(HidingSpot *spot)
 	const float minSniperRangeSq = 1000.0f * 1000.0f;
 	bool found = false;
 
-	for (NavAreaList::iterator iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+	sniperExtent.lo = Vector (0.0f, 0.0f, 0.0f);
+	sniperExtent.hi = Vector (0.0f, 0.0f, 0.0f);
+
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *iter;
+		CNavArea *area = TheNavAreaList[it];
 
 		const Extent *extent = area->GetExtent();
 
@@ -2881,9 +2830,9 @@ void CNavArea::ComputeSniperSpots()
 	if (cv_bot_quicksave.value > 0.0f)
 		return;
 
-	for (HidingSpotList::iterator iter = m_hidingSpotList.begin(); iter != m_hidingSpotList.end(); ++iter)
+	FOR_EACH_LL (m_hidingSpotList, it)
 	{
-		HidingSpot *spot = *iter;
+		HidingSpot *spot = m_hidingSpotList[it];
 
 		ClassifySniperSpot(spot);
 	}
@@ -2897,9 +2846,9 @@ SpotEncounter *CNavArea::GetSpotEncounter(const CNavArea *from, const CNavArea *
 	{
 		SpotEncounter *e;
 
-		for (SpotEncounterList::iterator iter = m_spotEncounterList.begin(); iter != m_spotEncounterList.end(); ++iter)
+		FOR_EACH_LL (m_spotEncounterList, it)
 		{
-			e = &(*iter);
+			e = m_spotEncounterList[it];
 
 			if (e->from.area == from && e->to.area == to)
 				return e;
@@ -2913,24 +2862,24 @@ SpotEncounter *CNavArea::GetSpotEncounter(const CNavArea *from, const CNavArea *
 
 void CNavArea::AddSpotEncounters(const class CNavArea *from, NavDirType fromDir, const CNavArea *to, NavDirType toDir)
 {
-	SpotEncounter e;
+	SpotEncounter *e = new SpotEncounter;
 
-	e.from.area = const_cast<CNavArea *>(from);
-	e.fromDir = fromDir;
+	e->from.area = const_cast<CNavArea *>(from);
+	e->fromDir = fromDir;
 
-	e.to.area = const_cast<CNavArea *>(to);
-	e.toDir = toDir;
+	e->to.area = const_cast<CNavArea *>(to);
+	e->toDir = toDir;
 
 	float halfWidth;
-	ComputePortal(to, toDir, &e.path.to, &halfWidth);
-	ComputePortal(from, fromDir, &e.path.from, &halfWidth);
+	ComputePortal(to, toDir, &e->path.to, &halfWidth);
+	ComputePortal(from, fromDir, &e->path.from, &halfWidth);
 
 	const float eyeHeight = HalfHumanHeight;
-	e.path.from.z = from->GetZ(&e.path.from) + eyeHeight;
-	e.path.to.z = to->GetZ(&e.path.to) + eyeHeight;
+	e->path.from.z = from->GetZ(&e->path.from) + eyeHeight;
+	e->path.to.z = to->GetZ(&e->path.to) + eyeHeight;
 
 	// step along ray and track which spots can be seen
-	Vector dir = e.path.to - e.path.from;
+	Vector dir = e->path.to - e->path.from;
 	float length = dir.NormalizeInPlace();
 
 	// create unique marker to flag used spots
@@ -2956,12 +2905,12 @@ void CNavArea::AddSpotEncounters(const class CNavArea *from, NavDirType fromDir,
 		}
 
 		// move the eyepoint along the path segment
-		eye = e.path.from + along * dir;
+		eye = e->path.from + along * dir;
 
 		// check each hiding spot for visibility
-		for (HidingSpotList::iterator iter = TheHidingSpotList.begin(); iter != TheHidingSpotList.end(); ++iter)
+		FOR_EACH_LL (TheHidingSpotList, it)
 		{
-			spot = *iter;
+			spot = TheHidingSpotList[it];
 
 			// only look at spots with cover (others are out in the open and easily seen)
 			if (!spot->HasGoodCover())
@@ -2997,7 +2946,7 @@ void CNavArea::AddSpotEncounters(const class CNavArea *from, NavDirType fromDir,
 					// add spot to encounter
 					spotOrder.spot = spot;
 					spotOrder.t = along / length;
-					e.spotList.push_back(spotOrder);
+					e->spotList.AddToTail(spotOrder);
 				}
 			}
 
@@ -3007,7 +2956,7 @@ void CNavArea::AddSpotEncounters(const class CNavArea *from, NavDirType fromDir,
 	}
 
 	// add encounter to list
-	m_spotEncounterList.push_back(e);
+	m_spotEncounterList.AddToTail(e);
 }
 
 // Compute "spot encounter" data. This is an ordered list of spots to look at
@@ -3015,7 +2964,7 @@ void CNavArea::AddSpotEncounters(const class CNavArea *from, NavDirType fromDir,
 
 void CNavArea::ComputeSpotEncounters()
 {
-	m_spotEncounterList.clear();
+	m_spotEncounterList.RemoveAll();
 
 	if (cv_bot_quicksave.value > 0.0f)
 		return;
@@ -3023,22 +2972,22 @@ void CNavArea::ComputeSpotEncounters()
 	// for each adjacent area
 	for (int fromDir = 0; fromDir < NUM_DIRECTIONS; ++fromDir)
 	{
-		for (NavConnectList::iterator fromIter = m_connect[ fromDir ].begin(); fromIter != m_connect[ fromDir ].end(); ++fromIter)
+		FOR_EACH_LL (m_connect[fromDir], it)
 		{
-			NavConnect *fromCon = &(*fromIter);
+			NavConnect *fromCon = &(m_connect[fromDir][it]);
 
 			// compute encounter data for path to each adjacent area
 			for (int toDir = 0; toDir < NUM_DIRECTIONS; ++toDir)
 			{
-				for (NavConnectList::iterator toIter = m_connect[ toDir ].begin(); toIter != m_connect[ toDir ].end(); ++toIter)
+				FOR_EACH_LL (m_connect[toDir], ot)
 				{
-					NavConnect *toCon = &(*toIter);
+					NavConnect *toCon = &(m_connect[toDir][ot]);
 
 					if (toCon == fromCon)
 						continue;
 
 					// just do our direction, as we'll loop around for other direction
-					AddSpotEncounters(fromCon->area, (NavDirType)fromDir, toCon->area, (NavDirType)toDir);
+					AddSpotEncounters (fromCon->area, (NavDirType)fromDir, toCon->area, (NavDirType)toDir);
 				}
 			}
 		}
@@ -3134,9 +3083,9 @@ void IncreaseDangerNearby(int teamID, float amount, class CNavArea *startArea, c
 
 void DrawDanger()
 {
-	for (NavAreaList::iterator iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *iter;
+		CNavArea *area = TheNavAreaList[it];
 
 		Vector center = *area->GetCenter();
 		Vector top;
@@ -3213,9 +3162,9 @@ public:
 		// collect all the hiding spots in this area
 		const HidingSpotList *list = area->GetHidingSpotList();
 
-		for (HidingSpotList::const_iterator iter = list->begin(); iter != list->end() && m_count < MAX_SPOTS; ++iter)
+		FOR_EACH_LL ((*list), it)
 		{
-			const HidingSpot *spot = *iter;
+			const HidingSpot *spot = (*list)[it];
 			if (m_useCrouchAreas == false)
 			{
 				CNavArea *area = TheNavAreaGrid.GetNavArea(spot->GetPosition());
@@ -3540,9 +3489,9 @@ void EditNavAreasReset()
 void DrawHidingSpots(const class CNavArea *area)
 {
 	const HidingSpotList *list = area->GetHidingSpotList();
-	for (HidingSpotList::const_iterator iter = list->begin(); iter != list->end(); ++iter)
+	FOR_EACH_LL ((*list), it)
 	{
-		const HidingSpot *spot = *iter;
+		const HidingSpot *spot = (*list)[it];
 
 		int r, g, b;
 
@@ -3789,9 +3738,9 @@ void EditNavAreas(NavEditCmdType cmd)
 	if (doDraw)
 	{
 		// show ladder connections
-		for (NavLadderList::iterator iter = TheNavLadderList.begin(); iter != TheNavLadderList.end(); ++iter)
+		FOR_EACH_LL (TheNavLadderList, it)
 		{
-			CNavLadder *ladder = *iter;
+			CNavLadder *ladder = TheNavLadderList[it];
 
 			float dx = player->pev->origin.x - ladder->m_bottom.x;
 			float dy = player->pev->origin.y - ladder->m_bottom.y;
@@ -4068,7 +4017,7 @@ void EditNavAreas(NavEditCmdType cmd)
 						return;
 					case EDIT_DELETE:
 						EMIT_SOUND_DYN(ENT(UTIL_GetLocalPlayer()->pev), CHAN_ITEM, "buttons/blip1.wav", 1, ATTN_NORM, 0, 100);
-						TheNavAreaList.remove(area);
+						TheNavAreaList.FindAndRemove(area);
 						delete area;
 						return;
 					case EDIT_ATTRIB_CROUCH:
@@ -4138,9 +4087,10 @@ void EditNavAreas(NavEditCmdType cmd)
 						else
 						{
 							markedArea = NULL;
-							for (NavAreaList::iterator iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+							FOR_EACH_LL (TheNavAreaList, it)
 							{
-								CNavArea *area = *iter;
+								CNavArea *area = TheNavAreaList[it];
+
 								if (area->GetPlace() == 0)
 								{
 									markedArea = area;
@@ -4162,9 +4112,9 @@ void EditNavAreas(NavEditCmdType cmd)
 								connected += markedArea->GetAdjacentCount(WEST);
 
 								int totalUnnamedAreas = 0;
-								for (NavAreaList::iterator iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+								FOR_EACH_LL (TheNavAreaList, it)
 								{
-									CNavArea *area = *iter;
+									CNavArea *area = TheNavAreaList[it];
 									if (area->GetPlace() == 0)
 									{
 										++totalUnnamedAreas;
@@ -4301,7 +4251,7 @@ void EditNavAreas(NavEditCmdType cmd)
 				{
 					// create the new nav area
 					CNavArea *newArea = new CNavArea(&anchor, &cursor);
-					TheNavAreaList.push_back(newArea);
+					TheNavAreaList.AddToTail(newArea);
 					TheNavAreaGrid.AddNavArea(newArea);
 					EMIT_SOUND_DYN(ENT(UTIL_GetLocalPlayer()->pev), CHAN_ITEM, "buttons/blip1.wav", 1, ATTN_NORM, 0, 100);
 
@@ -4498,36 +4448,10 @@ public:
 	}
 };
 
-// Can we see this area?
-// For now, if we can see any corner, we can see the area
-// TODO: Need to check LOS to more than the corners for large and/or long areas
-
-inline bool IsAreaVisible(const Vector *pos, const CNavArea *area)
-{
-	Vector corner;
-	TraceResult result;
-
-	for (int c = 0; c < NUM_CORNERS; ++c)
-	{
-		corner = *area->GetCorner((NavCornerType)c);
-		corner.z += 0.75f * HumanHeight;
-
-		UTIL_TraceLine(*pos, corner, ignore_monsters, NULL, &result);
-		if (result.flFraction == 1.0f)
-		{
-			// we can see this area
-			return true;
-		}
-	}
-
-	return false;
-}
-
 // Determine the set of "approach areas".
 // An approach area is an area representing a place where players
 // move into/out of our local neighborhood of areas.
-
-void CNavArea::ComputeApproachAreas()
+void CNavArea::ComputeApproachAreas ()
 {
 	m_approachCount = 0;
 
@@ -4536,113 +4460,181 @@ void CNavArea::ComputeApproachAreas()
 
 	// use the center of the nav area as the "view" point
 	Vector eye = m_center;
-	if (GetGroundHeight(&eye, &eye.z) == false)
+	if (GetGroundHeight (&eye, &eye.z) == false)
 		return;
 
 	// approximate eye position
-	if (GetAttributes() & NAV_CROUCH)
+	if (GetAttributes () & NAV_CROUCH)
 		eye.z += 0.9f * HalfHumanHeight;
 	else
 		eye.z += 0.9f * HumanHeight;
 
 	enum { MAX_PATH_LENGTH = 256 };
-	CNavArea *path[ MAX_PATH_LENGTH ];
+	CNavArea *path[MAX_PATH_LENGTH];
+	ApproachAreaCost cost;
 
-	//
-	// In order to enumerate all of the approach areas, we need to
-	// run the algorithm many times, once for each "far away" area
-	// and keep the union of the approach area sets
-	//
-	NavAreaList::iterator iter;
-	for (iter = goodSizedAreaList.begin(); iter != goodSizedAreaList.end(); ++iter)
+	enum SearchType
 	{
-		CNavArea *farArea = *iter;
+		FROM_EYE,		// start search from our eyepoint outward to farArea
+		TO_EYE,			// start search from farArea beack towards our eye
+		SEARCH_FINISHED
+	};
 
-		BlockedIDCount = 0;
-
-		// if we can see 'farArea', try again - the whole point is to go "around the bend", so to speak
-		if (IsAreaVisible(&eye, farArea))
-			continue;
-
-		// make first path to far away area
-		ApproachAreaCost cost;
-		if (NavAreaBuildPath(this, farArea, NULL, cost) == false)
-			continue;
-
+	//
+	// In order to *completely* enumerate all of the approach areas, we
+	// need to search from our eyepoint outward, as well as from outwards
+	// towards our eyepoint
+	//
+	for (int searchType = FROM_EYE; searchType != SEARCH_FINISHED; ++searchType)
+	{
 		//
-		// Keep building paths to farArea and blocking them off until we
-		// cant path there any more.
-		// As areas are blocked off, all exits will be enumerated.
+		// In order to enumerate all of the approach areas, we need to
+		// run the algorithm many times, once for each "far away" area
+		// and keep the union of the approach area sets
 		//
-		while (m_approachCount < MAX_APPROACH_AREAS)
+		int it;
+		for (it = TheNavAreaList.Head (); it != TheNavAreaList.InvalidIndex (); it = TheNavAreaList.Next (it))
 		{
-			// find number of areas on path
-			int count = 0;
-			CNavArea *area;
-			for (area = farArea; area; area = area->GetParent())
-				++count;
+			CNavArea *farArea = TheNavAreaList[it];
 
-			if (count > MAX_PATH_LENGTH)
-				count = MAX_PATH_LENGTH;
+			BlockedIDCount = 0;
 
-			// build path in correct order - from eye outwards
-			int i = count;
-			for (area = farArea; i && area; area = area->GetParent())
-				path[ --i ] = area;
-
-			// traverse path to find first area we cannot see (skip the first area)
-			for (i = 1; i < count; ++i)
+			// skip the small areas
+			const float minSize = 200.0f;		// 150
+			const Extent &extent = *farArea->GetExtent ();
+			if (extent.SizeX () < minSize || extent.SizeY () < minSize)
 			{
-				// if we see this area, continue on
-				if (IsAreaVisible(&eye, path[i]))
-					continue;
-
-				// we can't see this area.
-				// mark this area as "blocked" and unusable by subsequent approach paths
-				if (BlockedIDCount == MAX_BLOCKED_AREAS)
-				{
-					CONSOLE_ECHO("Overflow computing approach areas for area #%d.\n", m_id);
-					return;
-				}
-
-				// if the area to be blocked is actually farArea, block the one just prior
-				// (blocking farArea will cause all subsequent pathfinds to fail)
-				int block = (path[i] == farArea) ? i - 1 : i;
-
-				BlockedID[ BlockedIDCount++ ] = path[ block ]->GetID();
-
-				if (block == 0)
-					break;
-
-				// store new approach area if not already in set
-				int a;
-				for (a = 0; a < m_approachCount; ++a)
-					if (m_approach[a].here.area == path[block - 1])
-						break;
-
-				if (a == m_approachCount)
-				{
-					m_approach[ m_approachCount ].prev.area = (block >= 2) ? path[block-2] : NULL;
-
-					m_approach[ m_approachCount ].here.area = path[block - 1];
-					m_approach[ m_approachCount ].prevToHereHow = path[block - 1]->GetParentHow();
-
-					m_approach[ m_approachCount ].next.area = path[block];
-					m_approach[ m_approachCount ].hereToNextHow = path[block]->GetParentHow();
-
-					++m_approachCount;
-				}
-
-				// we are done with this path
-				break;
+				continue;
 			}
 
-			// find another path to 'farArea'
-			ApproachAreaCost cost;
-			if (NavAreaBuildPath(this, farArea, NULL, cost) == false)
+			// if we can see 'farArea', try again - the whole point is to go "around the bend", so to speak
+			if (farArea->IsVisible (eye))
 			{
-				// can't find a path to 'farArea' means all exits have been already tested and blocked
-				break;
+				continue;
+			}
+
+			//
+			// Keep building paths to farArea and blocking them off until we
+			// cant path there any more.
+			// As areas are blocked off, all exits will be enumerated.
+			//
+			while (m_approachCount < MAX_APPROACH_AREAS)
+			{
+				CNavArea *from, *to;
+
+				if (searchType == FROM_EYE)
+				{
+					// find another path *to* 'farArea'
+					// we must pathfind from us in order to pick up one-way paths OUT OF our area
+					from = this;
+					to = farArea;
+				}
+				else // TO_EYE
+				{
+					// find another path *from* 'farArea'
+					// we must pathfind to us in order to pick up one-way paths INTO our area
+					from = farArea;
+					to = this;
+				}
+
+				// build the actual path
+				if (NavAreaBuildPath (from, to, NULL, cost) == false)
+				{
+					break;
+				}
+
+				// find number of areas on path
+				int count = 0;
+				CNavArea *area;
+				for (area = to; area; area = area->GetParent ())
+				{
+					++count;
+				}
+
+				if (count > MAX_PATH_LENGTH)
+				{
+					count = MAX_PATH_LENGTH;
+				}
+
+				// if the path is only two areas long, there can be no approach points
+				if (count <= 2)
+				{
+					break;
+				}
+
+				// build path starting from eye
+				int i = 0;
+
+				if (searchType == FROM_EYE)
+				{
+					for (area = to; i < count && area; area = area->GetParent ())
+					{
+						path[count - i - 1] = area;
+						++i;
+					}
+				}
+				else // TO_EYE
+				{
+					for (area = to; i < count && area; area = area->GetParent ())
+					{
+						path[i++] = area;
+					}
+				}
+
+				// traverse path to find first area we cannot see (skip the first area)
+				for (i = 1; i < count; ++i)
+				{
+					// if we see this area, continue on
+					if (path[i]->IsVisible (eye))
+					{
+						continue;
+					}
+
+					// we can't see this area - mark this area as "blocked" and unusable by subsequent approach paths
+					if (BlockedIDCount == MAX_BLOCKED_AREAS)
+					{
+						CONSOLE_ECHO ("Overflow computing approach areas for area #%d.\n", m_id);
+						return;
+					}
+
+					// if the area to be blocked is actually farArea, block the one just prior
+					// (blocking farArea will cause all subsequent pathfinds to fail)
+					int block = (path[i] == farArea) ? i - 1 : i;
+
+					// dont block the start area, or all subsequence pathfinds will fail
+					if (block == 0)
+					{
+						continue;
+					}
+
+					BlockedID[BlockedIDCount++] = path[block]->GetID ();
+
+					// store new approach area if not already in set
+					int a;
+					for (a = 0; a < m_approachCount; ++a)
+					{
+						if (m_approach[a].here.area == path[block - 1])
+						{
+							break;
+						}
+					}
+
+					if (a == m_approachCount)
+					{
+						m_approach[m_approachCount].prev.area = (block >= 2) ? path[block - 2] : NULL;
+
+						m_approach[m_approachCount].here.area = path[block - 1];
+						m_approach[m_approachCount].prevToHereHow = path[block - 1]->GetParentHow ();
+
+						m_approach[m_approachCount].next.area = path[block];
+						m_approach[m_approachCount].hereToNextHow = path[block]->GetParentHow ();
+
+						++m_approachCount;
+					}
+
+					// we are done with this path
+					break;
+				}
 			}
 		}
 	}
@@ -4712,7 +4704,7 @@ void CNavAreaGrid::AddNavArea(CNavArea *area)
 	for (int y = loY; y <= hiY; ++y)
 	{
 		for (int x = loX; x <= hiX; ++x)
-			m_grid[ x + y*m_gridSizeX ].push_back(const_cast<CNavArea *>(area));
+			m_grid[ x + y*m_gridSizeX ].AddToTail(const_cast<CNavArea *>(area));
 	}
 
 	// add to hash table
@@ -4753,7 +4745,7 @@ void CNavAreaGrid::RemoveNavArea(CNavArea *area)
 	{
 		for (int x = loX; x <= hiX; ++x)
 		{
-			m_grid[x + y * m_gridSizeX].remove(area);
+			m_grid[x + y * m_gridSizeX].FindAndRemove(area);
 		}
 	}
 
@@ -4798,9 +4790,9 @@ CNavArea *CNavAreaGrid::GetNavArea(const Vector *pos, float beneathLimit) const
 	float useZ = -99999999.9f;
 	Vector testPos = *pos + Vector(0, 0, 5);
 
-	for (NavAreaList::iterator iter = list->begin(); iter != list->end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *iter;
+		CNavArea *area = TheNavAreaList[it];
 
 		// check if position is within 2D boundaries of this area
 		if (area->IsOverlapping(&testPos))
@@ -4858,9 +4850,9 @@ CNavArea *CNavAreaGrid::GetNearestNavArea(const Vector *pos, bool anyZ) const
 	// TODO: Step incrementally using grid for speed
 
 	// find closest nav area
-	for (NavAreaList::iterator iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *iter;
+		CNavArea *area = TheNavAreaList[it];
 
 		Vector areaPos;
 		area->GetClosestPointOnArea(&source, &areaPos);
@@ -4914,4 +4906,40 @@ Place CNavAreaGrid::GetPlace(const Vector *pos) const
 	}
 
 	return UNDEFINED_PLACE;
+}
+
+inline bool CNavArea::IsVisible (const Vector &eye, Vector *visSpot) const
+{
+	TraceResult result;
+	const float offset = 0.75f * HumanHeight;
+
+	// check center first
+	UTIL_TraceLine (eye, *GetCenter () + Vector (0, 0, offset), ignore_monsters, NULL, &result);
+	if (result.flFraction == 1.0f)
+	{
+		// we can see this area
+		if (visSpot)
+		{
+			*visSpot = *GetCenter ();
+		}
+		return true;
+	}
+
+	for (int c = 0; c<NUM_CORNERS; ++c)
+	{
+		const Vector *corner = GetCorner ((NavCornerType)c);
+		UTIL_TraceLine (eye, *corner + Vector (0, 0, offset), ignore_monsters, NULL, &result);
+
+		if (result.flFraction == 1.0f)
+		{
+			// we can see this area
+			if (visSpot)
+			{
+				*visSpot = *corner;
+			}
+			return true;
+		}
+	}
+
+	return false;
 }

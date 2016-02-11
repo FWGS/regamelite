@@ -116,8 +116,6 @@ void CFuncVehicle::Blocked(CBaseEntity *pOther)
 		return;
 	}
 
-	std::vector<int> da;
-
 	pevOther->velocity = (pevOther->origin - pev->origin).Normalize() * pev->dmg;
 	pevOther->velocity.z += 300;
 	pev->velocity = pev->velocity * 0.85;

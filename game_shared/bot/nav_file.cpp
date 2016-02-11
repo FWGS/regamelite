@@ -1,18 +1,5 @@
 #include "precompiled.h"
 
-// STL uses exceptions, but we are not compiling with them - ignore warning
-#pragma warning(disable : 4530)
-
-// long STL names get truncated in browse info.
-#pragma warning(disable : 4786)
-
-#undef min
-#undef max
-
-#include <list>
-#include <vector>
-#include <algorithm>
-
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <assert.h>
@@ -25,13 +12,12 @@ PlaceDirectory placeDirectory;
 
 void PlaceDirectory::Reset()
 {
-	m_directory.clear();
+	m_directory.RemoveAll();
 }
 
 bool PlaceDirectory::IsKnown(Place place) const
 {
-	std::vector<Place>::const_iterator it = std::find(m_directory.begin(), m_directory.end(), place);
-	return (it != m_directory.end());
+	return m_directory.Find (place) >= 0;
 }
 
 PlaceDirectory::EntryType PlaceDirectory::GetEntry(Place place) const
@@ -39,15 +25,15 @@ PlaceDirectory::EntryType PlaceDirectory::GetEntry(Place place) const
 	if (place == UNDEFINED_PLACE)
 		return 0;
 
-	std::vector<Place>::const_iterator it = std::find(m_directory.begin(), m_directory.end(), place);
+	int i = m_directory.Find (place);
 
-	if (it == m_directory.end())
+	if (i < 0)
 	{
-		assert(false && "PlaceDirectory::GetEntry failure");
+		Assert (false && "PlaceDirectory::GetIndex failure");
 		return 0;
 	}
 
-	return 1 + (it - m_directory.begin());
+	return (EntryType)(i + 1);
 }
 
 void PlaceDirectory::AddPlace(Place place)
@@ -60,7 +46,7 @@ void PlaceDirectory::AddPlace(Place place)
 	if (IsKnown(place))
 		return;
 
-	m_directory.push_back(place);
+	m_directory.AddToTail (place);
 }
 
 Place PlaceDirectory::EntryToPlace(EntryType entry) const
@@ -70,26 +56,25 @@ Place PlaceDirectory::EntryToPlace(EntryType entry) const
 
 	unsigned int i = entry - 1;
 
-	if (i > m_directory.size())
+	if ((int) i > m_directory.Count ())
 	{
 		assert(false && "PlaceDirectory::EntryToPlace: Invalid entry");
 		return UNDEFINED_PLACE;
 	}
 
-	return m_directory[ i ];
+	return m_directory[i];
 }
 
 void PlaceDirectory::Save(int fd)
 {
 	// store number of entries in directory
-	EntryType count = static_cast <EntryType> (m_directory.size());
+	EntryType count = static_cast <EntryType> (m_directory.Count ());
 	Q_write(fd, &count, sizeof(EntryType));
 
 	// store entries
-	std::vector<Place>::iterator it;
-	for (it = m_directory.begin(); it != m_directory.end(); ++it)
+	for (int i = 0; i < m_directory.Count (); ++i)
 	{
-		const char *placeName = TheBotPhrases->IDToName(*it);
+		const char *placeName = TheBotPhrases->IDToName(m_directory[i]);
 
 		// store string length followed by string itself
 		unsigned short len = (unsigned short) (Q_strlen(placeName) + 1);
@@ -104,7 +89,7 @@ void PlaceDirectory::Load(SteamFile *file)
 	EntryType count;
 	file->Read(&count, sizeof(EntryType));
 
-	m_directory.reserve(count);
+	m_directory.RemoveAll ();
 
 	// read each entry
 	char placeName[256];
@@ -170,36 +155,35 @@ void CNavArea::Save(int fd, unsigned int version)
 	for (int d = 0; d < NUM_DIRECTIONS; ++d)
 	{
 		// save number of connections for this direction
-		unsigned int count = m_connect[d].size();
+		unsigned int count = m_connect[d].Count();
 		Q_write(fd, &count, sizeof(unsigned int));
 
-		NavConnectList::const_iterator iter;
-		for (iter = m_connect[d].begin(); iter != m_connect[d].end(); ++iter)
+		FOR_EACH_LL (m_connect[d], it)
 		{
-			NavConnect connect = *iter;
+			NavConnect connect = m_connect[d][it];
 			Q_write(fd, &connect.area->m_id, sizeof(unsigned int));
 		}
 	}
 
 	// Store hiding spots for this area
 	unsigned char count;
-	if (m_hidingSpotList.size() > 255)
+	if (m_hidingSpotList.Count () > 255)
 	{
 		count = 255;
 		CONSOLE_ECHO("Warning: NavArea #%d: Truncated hiding spot list to 255\n", m_id);
 	}
 	else
 	{
-		count = (unsigned char) m_hidingSpotList.size();
+		count = (unsigned char) m_hidingSpotList.Count();
 	}
 
 	Q_write(fd, &count, sizeof(unsigned char));
 
 	// store HidingSpot objects
 	unsigned int saveCount = 0;
-	for (HidingSpotList::iterator iter = m_hidingSpotList.begin(); iter != m_hidingSpotList.end(); ++iter)
+	FOR_EACH_LL (m_hidingSpotList, it)
 	{
-		HidingSpot *spot = *iter;
+		HidingSpot *spot = m_hidingSpotList[it];
 
 		spot->Save(fd, version);
 
@@ -247,16 +231,16 @@ void CNavArea::Save(int fd, unsigned int version)
 	// Save encounter spots for this area
 	{
 		// save number of encounter paths for this area
-		unsigned int count = m_spotEncounterList.size();
+		unsigned int count = m_spotEncounterList.Count();
 		Q_write(fd, &count, sizeof(unsigned int));
 
 		if (cv_bot_debug.value > 0.0f)
 			CONSOLE_ECHO("  m_spotEncounterList.size() = %d\n", count);
 
 		SpotEncounter *e;
-		for (SpotEncounterList::iterator iter = m_spotEncounterList.begin(); iter != m_spotEncounterList.end(); ++iter)
+		FOR_EACH_LL (m_spotEncounterList, it)
 		{
-			e = &(*iter);
+			e = m_spotEncounterList[it];
 
 			if (e->from.area)
 				Q_write(fd, &e->from.area->m_id, sizeof(unsigned int));
@@ -276,21 +260,21 @@ void CNavArea::Save(int fd, unsigned int version)
 
 			// write list of spots along this path
 			unsigned char spotCount;
-			if (e->spotList.size() > 255)
+			if (e->spotList.Count() > 255)
 			{
 				spotCount = 255;
 				CONSOLE_ECHO("Warning: NavArea #%d: Truncated encounter spot list to 255\n", m_id);
 			}
 			else
 			{
-				spotCount = (unsigned char) e->spotList.size();
+				spotCount = (unsigned char) e->spotList.Count();
 			}
 			Q_write(fd, &spotCount, sizeof(unsigned char));
 
 			saveCount = 0;
-			for (SpotOrderList::iterator oiter = e->spotList.begin(); oiter != e->spotList.end(); ++oiter)
+			FOR_EACH_LL (e->spotList, it)
 			{
-				SpotOrder *order = &(*oiter);
+				SpotOrder *order = &e->spotList[it];
 
 				// order->spot may be NULL if we've loaded a nav mesh that has been edited but not re-analyzed
 				unsigned int id = (order->spot) ? order->spot->GetID() : 0;
@@ -347,7 +331,7 @@ void CNavArea::Load(SteamFile *file, unsigned int version)
 			NavConnect connect;
 			file->Read(&connect.id, sizeof(unsigned int));
 
-			m_connect[d].push_back(connect);
+			m_connect[d].AddToTail(connect);
 		}
 	}
 
@@ -367,7 +351,7 @@ void CNavArea::Load(SteamFile *file, unsigned int version)
 			// create new hiding spot and put on master list
 			HidingSpot *spot = new HidingSpot(&pos, HidingSpot::IN_COVER);
 
-			m_hidingSpotList.push_back(spot);
+			m_hidingSpotList.AddToTail(spot);
 		}
 	}
 	else
@@ -380,7 +364,7 @@ void CNavArea::Load(SteamFile *file, unsigned int version)
 
 			spot->Load(file, version);
 
-			m_hidingSpotList.push_back(spot);
+			m_hidingSpotList.FindAndRemove(spot);
 		}
 	}
 
@@ -435,18 +419,18 @@ void CNavArea::Load(SteamFile *file, unsigned int version)
 
 	for (unsigned int e = 0; e < count; ++e)
 	{
-		SpotEncounter encounter;
+		SpotEncounter *encounter = new SpotEncounter;
 
-		file->Read(&encounter.from.id, sizeof(unsigned int));
+		file->Read(&encounter->from.id, sizeof(unsigned int));
 
 		unsigned char dir;
 		file->Read(&dir, sizeof(unsigned char));
-		encounter.fromDir = static_cast<NavDirType>(dir);
+		encounter->fromDir = static_cast<NavDirType>(dir);
 
-		file->Read(&encounter.to.id, sizeof(unsigned int));
+		file->Read(&encounter->to.id, sizeof(unsigned int));
 
 		file->Read(&dir, sizeof(unsigned char));
-		encounter.toDir = static_cast<NavDirType>(dir);
+		encounter->toDir = static_cast<NavDirType>(dir);
 
 		// read list of spots along this path
 		unsigned char spotCount;
@@ -462,10 +446,10 @@ void CNavArea::Load(SteamFile *file, unsigned int version)
 
 			order.t = (float)t / 255.0f;
 
-			encounter.spotList.push_back(order);
+			encounter->spotList.AddToTail(order);
 		}
 
-		m_spotEncounterList.push_back(encounter);
+		m_spotEncounterList.AddToTail(encounter);
 	}
 
 	if (version < 5)
@@ -486,10 +470,9 @@ NavErrorType CNavArea::PostLoad()
 	// connect areas together
 	for (int d = 0; d < NUM_DIRECTIONS; ++d)
 	{
-		NavConnectList::iterator iter;
-		for (iter = m_connect[d].begin(); iter != m_connect[d].end(); ++iter)
+		FOR_EACH_LL (m_connect[d], it)
 		{
-			NavConnect *connect = &(*iter);
+			NavConnect *connect = &(m_connect[d][it]);
 
 			unsigned int id = connect->id;
 			connect->area = TheNavAreaGrid.GetNavAreaByID(id);
@@ -528,9 +511,9 @@ NavErrorType CNavArea::PostLoad()
 
 	// resolve spot encounter IDs
 	SpotEncounter *e;
-	for (SpotEncounterList::iterator iter = m_spotEncounterList.begin(); iter != m_spotEncounterList.end(); ++iter)
+	FOR_EACH_LL (m_spotEncounterList, it)
 	{
-		e = &(*iter);
+		e = m_spotEncounterList[it];
 
 		e->from.area = TheNavAreaGrid.GetNavAreaByID(e->from.id);
 		if (e->from.area == NULL)
@@ -559,9 +542,9 @@ NavErrorType CNavArea::PostLoad()
 		}
 
 		// resolve HidingSpot IDs
-		for (SpotOrderList::iterator oiter = e->spotList.begin(); oiter != e->spotList.end(); ++oiter)
+		FOR_EACH_LL (e->spotList, it2)
 		{
-			SpotOrder *order = &(*oiter);
+			SpotOrder *order = &e->spotList[it2];
 
 			order->spot = GetHidingSpotByID(order->id);
 			if (order->spot == NULL)
@@ -574,15 +557,15 @@ NavErrorType CNavArea::PostLoad()
 
 	// build overlap list
 	// TODO: Optimize this
-	for (NavAreaList::iterator oiter = TheNavAreaList.begin(); oiter != TheNavAreaList.end(); ++oiter)
+	FOR_EACH_LL (TheNavAreaList, it3)
 	{
-		CNavArea *area = *oiter;
+		CNavArea *area = TheNavAreaList[it3];
 
 		if (area == this)
 			continue;
 
 		if (IsOverlapping(area))
-			m_overlapList.push_back(area);
+			m_overlapList.AddToTail(area);
 	}
 
 	return error;
@@ -656,10 +639,9 @@ bool SaveNavigationMap(const char *filename)
 	// Build a directory of the Places in this map
 	placeDirectory.Reset();
 
-	NavAreaList::iterator it;
-	for (it = TheNavAreaList.begin(); it != TheNavAreaList.end(); ++it)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *it;
+		CNavArea *area = TheNavAreaList[it];
 		Place place = area->GetPlace();
 
 		if (place)
@@ -672,99 +654,22 @@ bool SaveNavigationMap(const char *filename)
 
 	// Store navigation areas
 	// store number of areas
-	unsigned int count = TheNavAreaList.size();
+	unsigned int count = TheNavAreaList.Count();
 	Q_write(fd, &count, sizeof(unsigned int));
 
 	// store each area
-	for (it = TheNavAreaList.begin(); it != TheNavAreaList.end(); ++it)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *it;
+		CNavArea *area = TheNavAreaList[it];
 		area->Save(fd, version);
 	}
 
 	Q_close(fd);
 
-#ifdef _WIN32
-	// output a simple Wavefront file to visualize the generated areas in 3DSMax
-	FILE *fp = fopen("c:\\tmp\\nav.obj", "w");
-	if (fp)
-	{
-		for (NavAreaList::iterator iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
-		{
-			(*iter)->Save(fp);
-		}
-
-		fclose(fp);
-	}
-#endif // _WIN32
-
 	return true;
 }
 
-// Load place map
-// This is legacy code - Places are stored directly in the nav file now
-
-void LoadLocationFile(const char *filename)
-{
-	char locFilename[256];
-	Q_strcpy(locFilename, filename);
-
-	char *dot = Q_strchr(locFilename, '.');
-	if (dot)
-	{
-		Q_strcpy(dot, ".loc");
-
-		int locDataLength;
-		char *locDataFile = (char *)LOAD_FILE_FOR_ME(const_cast<char *>(locFilename), &locDataLength);
-		char *locData = locDataFile;
-
-		if (locData)
-		{
-			CONSOLE_ECHO("Loading legacy 'location file' '%s'\n", locFilename);
-
-			// read directory
-			locData = MP_COM_Parse(locData);
-			int dirSize = Q_atoi(MP_COM_GetToken());
-
-			if (dirSize)
-			{
-				std::vector<unsigned int> directory;
-				directory.reserve(dirSize);
-
-				for (int i = 0; i < dirSize; ++i)
-				{
-					locData = MP_COM_Parse(locData);
-					directory.push_back(TheBotPhrases->NameToID(MP_COM_GetToken()));
-				}
-
-				// read places for each nav area
-				unsigned int areaID, locDirIndex;
-				while (true)
-				{
-					locData = MP_COM_Parse(locData);
-					if (locData == NULL)
-						break;
-
-					areaID = Q_atoi(MP_COM_GetToken());
-
-					locData = MP_COM_Parse(locData);
-					locDirIndex = Q_atoi(MP_COM_GetToken());
-
-					CNavArea *area = TheNavAreaGrid.GetNavAreaByID(areaID);
-					unsigned int place = (locDirIndex > 0) ? directory[locDirIndex - 1] : UNDEFINED_PLACE;
-
-					if (area)
-						area->SetPlace(place);
-				}
-			}
-
-			FREE_FILE(locDataFile);
-		}
-	}
-}
-
 // Performs a lightweight sanity-check of the specified map's nav mesh
-
 void SanityCheckNavigationMap(const char *mapName)
 {
 	if (!mapName)
@@ -838,7 +743,7 @@ NavErrorType LoadNavigationMap()
 {
 	// since the navigation map is destroyed on map change,
 	// if it exists it has already been loaded for this map
-	if (!TheNavAreaList.empty())
+	if (TheNavAreaList.Count())
 		return NAV_OK;
 
 	// nav filename is derived from map filename
@@ -920,7 +825,7 @@ NavErrorType LoadNavigationMap()
 	{
 		CNavArea *area = new CNavArea;
 		area->Load(&navFile, version);
-		TheNavAreaList.push_back(area);
+		TheNavAreaList.AddToTail(area);
 
 		const Extent *areaExtent = area->GetExtent();
 
@@ -945,23 +850,17 @@ NavErrorType LoadNavigationMap()
 	// add the areas to the grid
 	TheNavAreaGrid.Initialize(extent.lo.x, extent.hi.x, extent.lo.y, extent.hi.y);
 
-	NavAreaList::iterator iter;
-	for (iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
-		TheNavAreaGrid.AddNavArea(*iter);
+	FOR_EACH_LL (TheNavAreaList, it)
+	{
+		TheNavAreaGrid.AddNavArea (TheNavAreaList[it]);
+	}
 
 	// allow areas to connect to each other, etc
-	for (iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *iter;
+		CNavArea *area = TheNavAreaList[it];
 		area->PostLoad();
 	}
-
-	// load legacy location file (Places)
-	if (version < 5)
-	{
-		LoadLocationFile(filename);
-	}
-
 	// Set up all the ladders
 	BuildLadders();
 

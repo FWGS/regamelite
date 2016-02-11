@@ -147,11 +147,9 @@ void HuntState::OnUpdate(CCSBot *me)
 		int areaCount = 0;
 		const float minSize = 150.0f;
 
-		NavAreaList::iterator iter;
-
-		for (iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+		FOR_EACH_LL (TheNavAreaList, it)
 		{
-			CNavArea *area = (*iter);
+			CNavArea *area = TheNavAreaList[it];
 
 			++areaCount;
 
@@ -173,9 +171,9 @@ void HuntState::OnUpdate(CCSBot *me)
 		int which = RANDOM_LONG(0, areaCount - 1);
 
 		areaCount = 0;
-		for (iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+		FOR_EACH_LL (TheNavAreaList, it2)
 		{
-			m_huntArea = (*iter);
+			m_huntArea = TheNavAreaList[it2];
 
 			if (which == areaCount)
 				break;

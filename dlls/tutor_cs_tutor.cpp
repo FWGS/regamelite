@@ -177,6 +177,10 @@ CCSTutor::CCSTutor()
 
 CCSTutor::~CCSTutor()
 {
+	for (int i = 0; i < m_messageMap.Count (); i++)
+		delete [] m_messageMap[i]->name;
+	m_messageMap.PurgeAndDeleteElements ();
+
 	if (m_stateSystem != NULL)
 	{
 		delete m_stateSystem;
@@ -419,10 +423,11 @@ void CCSTutor::ReadTutorMessageFile()
 			messageData = MP_COM_Parse(messageData);
 			token = MP_COM_GetToken();
 
-			std::string identifier = token;
-			TutorMessage *tm = ConstructTutorMessage(messageData, &defaultMessage);
+			TutorMap *newMap = new TutorMap;
+			newMap->name = CloneString (token);
+			newMap->msg = ConstructTutorMessage (messageData, &defaultMessage);
 
-			m_messageMap[identifier] = tm;
+			m_messageMap.AddToTail (newMap);
 		}
 		else if (!Q_stricmp(token, "Defaults"))
 		{
@@ -1730,7 +1735,7 @@ NOXREF void CCSTutor::HandleClientCorpseSpawned(CBaseEntity *entity, CBaseEntity
 	corpse->m_position = player->pev->origin;
 	corpse->m_team = player->m_iTeam;
 
-	m_clientCorpseList.push_back(corpse);
+	m_clientCorpseList.AddToTail(corpse);
 }
 
 void CCSTutor::HandleBuyMenuOpenned(CBaseEntity *entity, CBaseEntity *other)
@@ -2711,13 +2716,13 @@ TutorMessage *CCSTutor::GetTutorMessageDefinition(int messageID)
 		return NULL;
 	}
 
-	TutorMessageMapIter iter = m_messageMap.find(TutorIdentifierList[messageID]);
-
-	if (iter != m_messageMap.end())
+	for (int i = 0; i < m_messageMap.Count (); i++)
 	{
-		return (*iter).second;
-	}
+		TutorMap *map = m_messageMap[i];
 
+		if (!Q_stricmp (TutorIdentifierList[messageID], map->name))
+			return map->msg;
+	}
 	return NULL;
 }
 
@@ -2741,46 +2746,46 @@ CBaseEntity *CCSTutor::GetEntityForMessageID(int messageID, CBaseEntity *last)
 
 			if (localPlayer != NULL)
 			{
-				if (m_clientCorpseList.empty())
+				if (!m_clientCorpseList.Count())
 				{
 					return NULL;
 				}
 
 				ClientCorpseStruct *lastCorpse = NULL;
-				ClientCorpseListIter iter;
+				int iter;
 
 				if (last != NULL)
 				{
-					iter = m_clientCorpseList.begin();
+					iter = m_clientCorpseList.Head();
 
-					while (iter != m_clientCorpseList.end())
+					while (iter != m_clientCorpseList.InvalidIndex())
 					{
-						lastCorpse = (*iter);
+						lastCorpse = m_clientCorpseList[iter];
 
 						if ((CBaseEntity *)lastCorpse == last)
 						{
 							break;
 						}
 
-						++iter;
+						iter = m_clientCorpseList.Next (iter);
 					}
 
-					while (iter != m_clientCorpseList.end())
+					while (iter != m_clientCorpseList.InvalidIndex ())
 					{
-						ClientCorpseStruct *corpse = (*iter);
+						ClientCorpseStruct *corpse = m_clientCorpseList[iter];
 
 						if (corpse->m_team == localPlayer->m_iTeam)
 						{
 							return (CBaseEntity *)&corpse->m_position;
 						}
 
-						++iter;
+						iter = m_clientCorpseList.Next (iter);
 					}
 
 					return NULL;
 				}
 				else
-					return (CBaseEntity *)&m_clientCorpseList.front()->m_position;
+					return (CBaseEntity *)&m_clientCorpseList.Element (m_clientCorpseList.Head ())->m_position;
 			}
 #endif
 			break;

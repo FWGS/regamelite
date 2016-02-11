@@ -96,10 +96,7 @@
 	#undef __FUNCTION__
 #endif // _WIN32
 
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <iomanip>
+#include <stdint.h>
 
 #ifdef _WIN32 // WINDOWS
 typedef unsigned char      uint8;

@@ -673,11 +673,13 @@ void Host_Say(edict_t *pEntity, int teamonly)
 			Place playerPlace = TheNavAreaGrid.GetPlace(&player->pev->origin);
 			const BotPhraseList *placeList = TheBotPhrases->GetPlaceList();
 
-			for (BotPhraseList::const_iterator iter = placeList->begin(); iter != placeList->end(); ++iter)
+			FOR_EACH_LL((*placeList), it)
 			{
-				if ((*iter)->GetID() == playerPlace)
+				BotPhrase *phrase = (*placeList)[it];
+
+				if (phrase->GetID() == playerPlace)
 				{
-					placeName = (*iter)->GetName();
+					placeName = phrase->GetName();
 					break;
 				}
 			}

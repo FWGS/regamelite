@@ -32,11 +32,6 @@
 #pragma once
 #endif
 
-// STL uses exceptions, but we are not compiling with them - ignore warning
-#pragma warning(disable : 4530)
-
-#include <list>
-
 class CNavArea;
 class CGrenade;
 
@@ -61,7 +56,7 @@ private:
 	float m_dieTimestamp;
 };
 
-typedef std::STD_LIST<ActiveGrenade *> ActiveGrenadeList;
+typedef CUtlLinkedList<ActiveGrenade *, int> ActiveGrenadeList;
 
 class CBotManager
 {

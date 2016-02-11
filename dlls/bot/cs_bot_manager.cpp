@@ -77,7 +77,7 @@ CCSBotManager::CCSBotManager()
 	// Now that we've parsed all the profiles, we have a list of the voice banks they're using.
 	// Go back and parse the custom voice speakables.
 	const BotProfileManager::VoiceBankList *pVoiceBanks = TheBotProfiles->GetVoiceBanks();
-	for (uint32 i = 1; i < pVoiceBanks->size(); ++i)
+	for (int i = 1; i < pVoiceBanks->Count(); ++i)
 	{
 		TheBotPhrases->Initialize((*pVoiceBanks)[i], i);
 	}
@@ -595,12 +595,14 @@ void CCSBotManager::ServerCommand(const char *pcmd)
 			// no arguments = list all available places
 			int i = 0;
 			const BotPhraseList *placeList = TheBotPhrases->GetPlaceList();
-			for (BotPhraseList::const_iterator iter = placeList->begin(); iter != placeList->end(); ++iter, ++i)
+			FOR_EACH_LL ((*placeList), it)
 			{
-				if ((*iter)->GetID() == GetNavPlace())
-					CONSOLE_ECHO("--> %-26s", (*iter)->GetName());
+				const BotPhrase *phrase = (*placeList)[it];
+
+				if (phrase->GetID() == GetNavPlace())
+					CONSOLE_ECHO("--> %-26s", phrase->GetName());
 				else
-					CONSOLE_ECHO("%-30s", (*iter)->GetName());
+					CONSOLE_ECHO("%-30s", phrase->GetName());
 
 				if (!(i % 3))
 					CONSOLE_ECHO("\n");
@@ -613,14 +615,15 @@ void CCSBotManager::ServerCommand(const char *pcmd)
 			const BotPhraseList *placeList = TheBotPhrases->GetPlaceList();
 			const BotPhrase *found = NULL;
 			bool isAmbiguous = false;
-			for (BotPhraseList::const_iterator iter = placeList->begin(); iter != placeList->end(); ++iter)
+			FOR_EACH_LL ((*placeList), it)
 			{
-				if (!Q_strnicmp((*iter)->GetName(), msg, Q_strlen(msg)))
+				const BotPhrase *phrase = (*placeList)[it];
+				if (!Q_strnicmp(phrase->GetName(), msg, Q_strlen(msg)))
 				{
 					// check for exact match in case of subsets of other strings
-					if (!Q_strcmp((*iter)->GetName(), msg))
+					if (!Q_strcmp(phrase->GetName(), msg))
 					{
-						found = (*iter);
+						found = phrase;
 						isAmbiguous = false;
 						break;
 					}
@@ -631,7 +634,7 @@ void CCSBotManager::ServerCommand(const char *pcmd)
 					}
 					else
 					{
-						found = (*iter);
+						found = phrase;
 					}
 				}
 			}
@@ -702,21 +705,21 @@ void CCSBotManager::ServerCommand(const char *pcmd)
 			sizeof(CNavArea),
 			TheNavAreaGrid.GetNavAreaCount() * sizeof(CNavArea));
 		CONSOLE_ECHO("  %d Hiding Spots @ %d bytes each = %d bytes\n",
-			TheHidingSpotList.size(),
+			TheHidingSpotList.Count(),
 			sizeof(HidingSpot),
-			sizeof(HidingSpot) * TheHidingSpotList.size());
+			sizeof(HidingSpot) * TheHidingSpotList.Count());
 
 		unsigned int encounterMem = 0;
-		for (NavAreaList::iterator iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+		FOR_EACH_LL (TheNavAreaList, it)
 		{
-			CNavArea *area = (*iter);
+			CNavArea *area = TheNavAreaList[it];
 
-			for (SpotEncounterList::iterator siter = area->m_spotEncounterList.begin(); siter != area->m_spotEncounterList.end(); ++siter)
+			FOR_EACH_LL (area->m_spotEncounterList, it2)
 			{
-				SpotEncounter se = (*siter);
+				SpotEncounter *se = area->m_spotEncounterList[it2];
 
 				encounterMem += sizeof(SpotEncounter);
-				encounterMem += sizeof(SpotOrder) * se.spotList.size();
+				encounterMem += sizeof(SpotOrder) * se->spotList.Count();
 			}
 		}
 

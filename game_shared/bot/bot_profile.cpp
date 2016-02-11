@@ -239,11 +239,13 @@ void BotProfileManager::Init(const char *filename, unsigned int *checksum)
 					*c = '\0';
 
 				// find the given template name
-				for (BotProfileList::iterator iter = templateList.begin(); iter != templateList.end(); ++iter)
+				FOR_EACH_LL (templateList, it)
 				{
-					if (!Q_stricmp((*iter)->GetName(), token))
+					BotProfile *profile = templateList[it];
+
+					if (!Q_stricmp(profile->GetName(), token))
 					{
-						inherit = *iter;
+						inherit = profile;
 						break;
 					}
 				}
@@ -459,12 +461,12 @@ void BotProfileManager::Init(const char *filename, unsigned int *checksum)
 			if (isTemplate)
 			{
 				// add to template list
-				templateList.push_back(profile);
+				templateList.AddToTail(profile);
 			}
 			else
 			{
 				// add profile to the master list
-				m_profileList.push_back(profile);
+				m_profileList.AddToTail (profile);
 			}
 		}
 	}
@@ -472,28 +474,20 @@ void BotProfileManager::Init(const char *filename, unsigned int *checksum)
 	FREE_FILE(dataPointer);
 
 	// free the templates
-	for (BotProfileList::iterator iter = templateList.begin(); iter != templateList.end(); ++iter)
-		delete *iter;
+	templateList.PurgeAndDeleteElements ();
 }
 
 BotProfileManager::~BotProfileManager()
 {
 	Reset();
-
-	for (VoiceBankList::iterator it = m_voiceBanks.begin(); it != m_voiceBanks.end(); ++it)
-		delete[] *it;
-
-	m_voiceBanks.clear();
+	m_voiceBanks.PurgeAndDeleteElements ();
 }
 
 // Free all bot profiles
 
 void BotProfileManager::Reset()
 {
-	for (BotProfileList::iterator iter = m_profileList.begin(); iter != m_profileList.end(); ++iter)
-		delete *iter;
-
-	m_profileList.clear();
+	m_profileList.PurgeAndDeleteElements ();
 
 	for (int i = 0; i < NumCustomSkins; ++i)
 	{
@@ -580,15 +574,16 @@ int BotProfileManager::GetCustomSkinIndex(const char *name, const char *filename
 int BotProfileManager::FindVoiceBankIndex(const char *filename)
 {
 	int index = 0;
-	for (VoiceBankList::const_iterator it = m_voiceBanks.begin(); it != m_voiceBanks.end(); ++it, ++index)
+
+	for (int i = 0; i<m_voiceBanks.Count (); ++i)
 	{
-		if (!Q_stricmp(filename, *it))
+		if (!Q_stricmp (filename, m_voiceBanks[i]))
 		{
 			return index;
 		}
 	}
 
-	m_voiceBanks.push_back(CloneString(filename));
+	m_voiceBanks.AddToTail (CloneString (filename));
 	return index;
 }
 
@@ -597,36 +592,34 @@ int BotProfileManager::FindVoiceBankIndex(const char *filename)
 const BotProfile *BotProfileManager::GetRandomProfile(BotDifficultyType difficulty, BotProfileTeamType team) const
 {
 #ifdef RANDOM_LONG
-	BotProfileList::const_iterator iter;
 
 	// count up valid profiles
-	int validCount = 0;
-	for (iter = m_profileList.begin(); iter != m_profileList.end(); ++iter)
+	CUtlVector< const BotProfile * > profiles;
+	FOR_EACH_LL( m_profileList, it )
 	{
-		const BotProfile *profile = (*iter);
+		const BotProfile *profile = m_profileList[ it ];
 
-		if (profile->IsDifficulty(difficulty) && !UTIL_IsNameTaken(profile->GetName()) && profile->IsValidForTeam(team))
-			++validCount;
+		// Match difficulty
+		if ( !profile->IsDifficulty( difficulty ) )
+			continue;
+
+		// Prevent duplicate names
+		if ( UTIL_IsNameTaken( profile->GetName() ) )
+			continue;
+
+		// Match team choice
+		if ( !profile->IsValidForTeam( team ) )
+			continue;
+
+		profiles.AddToTail( profile );
 	}
 
-	if (validCount == 0)
+	if ( !profiles.Count() )
 		return NULL;
 
 	// select one at random
-	int which = RANDOM_LONG(0, validCount - 1);
-
-	for (iter = m_profileList.begin(); iter != m_profileList.end(); ++iter)
-	{
-		const BotProfile *profile = (*iter);
-
-		if (profile->IsDifficulty(difficulty) && !UTIL_IsNameTaken(profile->GetName()) && profile->IsValidForTeam(team))
-		{
-			if (which-- == 0)
-				return profile;
-		}
-	}
-
-	return NULL;
+	int which = RANDOM_LONG( 0, profiles.Count()-1 );
+	return profiles[which];
 #else
 	// we don't need random profiles when we're not in the game dll
 	return NULL;

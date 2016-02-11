@@ -422,19 +422,14 @@ void CCareerTaskManager::Reset(bool deleteTasks)
 {
 	if (deleteTasks)
 	{
-		for (CareerTaskListIt it = m_tasks.begin(); it != m_tasks.end(); ++it)
-		{
-			delete (*it);
-		}
-
-		m_tasks.clear();
+		m_tasks.PurgeAndDeleteElements ();
 		m_nextId = 0;
 	}
 	else
 	{
-		for (CareerTaskListIt it = m_tasks.begin(); it != m_tasks.end(); ++it)
+		FOR_EACH_LL (m_tasks, it)
 		{
-			CCareerTask *pTask = (*it);
+			CCareerTask *pTask = m_tasks[it];
 			pTask->Reset();
 		}
 	}
@@ -478,7 +473,7 @@ void CCareerTaskManager::AddTask(const char *taskName, const char *weaponName, i
 					isComplete
 				);
 
-				m_tasks.push_back(newTask);
+				m_tasks.AddToTail (newTask);
 
 				if (pTaskInfo->event == EVENT_ROUND_WIN && !Q_strcmp(taskName, "winfast"))
 				{
@@ -515,17 +510,17 @@ void CCareerTaskManager::HandleEvent(GameEventType event, CBasePlayer *pAttacker
 		return;
 	}
 
-	for (CareerTaskListIt it = m_tasks.begin(); it != m_tasks.end(); ++it)
+	FOR_EACH_LL (m_tasks, it)
 	{
-		(*it)->OnEvent(event, pAttacker, pVictim);
+		m_tasks[it]->OnEvent(event, pAttacker, pVictim);
 	}
 }
 
 void CCareerTaskManager::HandleWeaponKill(int weaponId, int weaponClassId, bool headshot, bool killerHasShield, CBasePlayer *pAttacker, CBasePlayer *pVictim)
 {
-	for (CareerTaskListIt it = m_tasks.begin(); it != m_tasks.end(); ++it)
+	FOR_EACH_LL (m_tasks, it)
 	{
-		(*it)->OnWeaponKill(weaponId, weaponClassId, headshot, killerHasShield, pAttacker, pVictim);
+		m_tasks[it]->OnWeaponKill(weaponId, weaponClassId, headshot, killerHasShield, pAttacker, pVictim);
 	}
 }
 
@@ -547,9 +542,9 @@ void CCareerTaskManager::HandleEnemyKill(bool wasBlind, const char *weaponName, 
 
 void CCareerTaskManager::HandleWeaponInjury(int weaponId, int weaponClassId, bool attackerHasShield, CBasePlayer *pAttacker)
 {
-	for (CareerTaskListIt it = m_tasks.begin(); it != m_tasks.end(); ++it)
+	FOR_EACH_LL (m_tasks, it)
 	{
-		(*it)->OnWeaponInjury(weaponId, weaponClassId, attackerHasShield, pAttacker);
+		m_tasks[it]->OnWeaponInjury(weaponId, weaponClassId, attackerHasShield, pAttacker);
 	}
 }
 
@@ -583,9 +578,9 @@ void CCareerTaskManager::HandleDeath(int team, CBasePlayer *pAttacker)
 
 bool CCareerTaskManager::AreAllTasksComplete()
 {
-	for (CareerTaskListIt it = m_tasks.begin(); it != m_tasks.end(); ++it)
+	FOR_EACH_LL (m_tasks, it)
 	{
-		if (!(*it)->IsComplete())
+		if (!m_tasks[it]->IsComplete())
 			return false;
 	}
 
@@ -595,9 +590,9 @@ bool CCareerTaskManager::AreAllTasksComplete()
 int CCareerTaskManager::GetNumRemainingTasks()
 {
 	int ret = 0;
-	for (CareerTaskListIt it = m_tasks.begin(); it != m_tasks.end(); ++it)
+	FOR_EACH_LL (m_tasks, it)
 	{
-		if (!(*it)->IsComplete())
+		if (!m_tasks[it]->IsComplete ())
 			ret++;
 	}
 

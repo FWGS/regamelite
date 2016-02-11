@@ -32,8 +32,6 @@
 #pragma once
 #endif
 
-#include <map>
-
 enum TutorMessageClass
 {
 	TUTORMESSAGECLASS_NORMAL = 0,
@@ -253,8 +251,13 @@ enum TutorMessageID
 	TUTOR_NUM_MESSAGES
 };
 
-typedef std::map<std::string, TutorMessage *> TutorMessageMap;
-typedef TutorMessageMap::iterator TutorMessageMapIter;
+struct TutorMap
+{
+	char *name;
+	TutorMessage *msg;
+};
+
+typedef CUtlVector<TutorMap *> TutorMessageMap;
 
 struct ClientCorpseStruct
 {
@@ -262,8 +265,7 @@ struct ClientCorpseStruct
 	int m_team;
 };
 
-typedef std::STD_VECTOR<ClientCorpseStruct *> ClientCorpseList;
-typedef ClientCorpseList::iterator ClientCorpseListIter;
+typedef CUtlLinkedList<ClientCorpseStruct *, int> ClientCorpseList;
 
 class CCSTutor: public CBaseTutor
 {

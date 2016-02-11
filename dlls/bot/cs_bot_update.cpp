@@ -327,7 +327,7 @@ void CCSBot::Update()
 			}
 		}
 		else
-			ThrowGrenade(&pev->origin);
+			ThrowGrenade(&threat->pev->origin);
 
 		// if we aren't attacking but we are being attacked, retaliate
 		if (!doAttack && !IsAttacking() && GetDisposition() != IGNORE_ENEMIES)

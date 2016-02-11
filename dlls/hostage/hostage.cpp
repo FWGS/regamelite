@@ -170,7 +170,7 @@ void CHostage::IdleThink()
 	const float giveUpTime = (1 / 30.0f);
 	float const updateRate = 0.1f;
 
-	if (!TheNavAreaList.empty())
+	if (g_bIsCzeroGame && TheNavAreaList.Count())
 	{
 		if (!m_improv)
 		{

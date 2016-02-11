@@ -138,8 +138,8 @@ void hideProgressMeter()
 
 void CCSBot::StartLearnProcess()
 {
-	startProgressMeter("#CZero_LearningMap");
-	drawProgressMeter(0, "#CZero_LearningMap");
+	startProgressMeter("Analyzing map geometry...");
+	drawProgressMeter(0, "Analyzing map geometry...");
 	BuildLadders();
 
 	Vector normal;
@@ -174,10 +174,9 @@ bool CCSBot::LearnStep()
 		if (m_currentNode == NULL)
 		{
 			// search is exhausted - continue search from ends of ladders
-			NavLadderList::iterator iter;
-			for (iter = TheNavLadderList.begin(); iter != TheNavLadderList.end(); ++iter)
+			FOR_EACH_LL (TheNavLadderList, it)
 			{
-				CNavLadder *ladder = (*iter);
+				CNavLadder *ladder = TheNavLadderList[it];
 
 				// check ladder bottom
 				if ((m_currentNode = LadderEndSearch(ladder->m_entity, &ladder->m_bottom, ladder->m_dir)) != 0)
@@ -358,28 +357,27 @@ void CCSBot::UpdateLearnProcess()
 void CCSBot::StartAnalyzeAlphaProcess()
 {
 	m_processMode = PROCESS_ANALYZE_ALPHA;
-	m_analyzeIter = TheNavAreaList.begin();
+	m_analyzeIter = TheNavAreaList.Head ();
 
-	_navAreaCount = TheNavAreaList.size();
+	_navAreaCount = TheNavAreaList.Count();
 	_currentIndex = 0;
 
-	ApproachAreaAnalysisPrep();
 	DestroyHidingSpots();
 
-	startProgressMeter("#CZero_AnalyzingHidingSpots");
-	drawProgressMeter(0, "#CZero_AnalyzingHidingSpots");
+	startProgressMeter("Analyzing hiding spots...");
+	drawProgressMeter(0, "Analyzing hiding spots...");
 }
 
 bool CCSBot::AnalyzeAlphaStep()
 {
 	++_currentIndex;
-	if (m_analyzeIter == TheNavAreaList.end())
+	if (m_analyzeIter == TheNavAreaList.InvalidIndex ())
 		return false;
 
-	CNavArea *area = (*m_analyzeIter);
+	CNavArea *area = TheNavAreaList.Element (m_analyzeIter);
 	area->ComputeHidingSpots();
 	area->ComputeApproachAreas();
-	++m_analyzeIter;
+	m_analyzeIter = TheNavAreaList.Next (m_analyzeIter);
 
 	return true;
 }
@@ -391,36 +389,35 @@ void CCSBot::UpdateAnalyzeAlphaProcess()
 	{
 		if (AnalyzeAlphaStep() == false)
 		{
-			drawProgressMeter(50, "#CZero_AnalyzingHidingSpots");
-			CleanupApproachAreaAnalysisPrep();
+			drawProgressMeter(50, "Analyzing hiding spots...");
 			StartAnalyzeBetaProcess();
 			return;
 		}
 	}
 
 	float progress = _currentIndex / _navAreaCount * 50.0f;
-	drawProgressMeter(progress, "#CZero_AnalyzingHidingSpots");
+	drawProgressMeter(progress, "Analyzing hiding spots...");
 }
 
 void CCSBot::StartAnalyzeBetaProcess()
 {
 	m_processMode = PROCESS_ANALYZE_BETA;
-	m_analyzeIter = TheNavAreaList.begin();
+	m_analyzeIter = TheNavAreaList.Head ();
 
-	_navAreaCount = TheNavAreaList.size();
+	_navAreaCount = TheNavAreaList.Count ();
 	_currentIndex = 0;
 }
 
 bool CCSBot::AnalyzeBetaStep()
 {
 	++_currentIndex;
-	if (m_analyzeIter == TheNavAreaList.end())
+	if (m_analyzeIter == TheNavAreaList.InvalidIndex ())
 		return false;
 
-	CNavArea *area = (*m_analyzeIter);
+	CNavArea *area = TheNavAreaList.Element (m_analyzeIter);
 	area->ComputeSpotEncounters();
 	area->ComputeSniperSpots();
-	++m_analyzeIter;
+	m_analyzeIter = TheNavAreaList.Next (m_analyzeIter);
 
 	return true;
 }
@@ -432,14 +429,14 @@ void CCSBot::UpdateAnalyzeBetaProcess()
 	{
 		if (AnalyzeBetaStep() == false)
 		{
-			drawProgressMeter(100, "#CZero_AnalyzingApproachPoints");
+			drawProgressMeter(100, "Analyzing approach points...");
 			StartSaveProcess();
 			return;
 		}
 	}
 
 	float progress = ((_currentIndex / _navAreaCount) + 1.0f) * 50.0f;
-	drawProgressMeter(progress, "#CZero_AnalyzingApproachPoints");
+	drawProgressMeter(progress, "Analyzing approach points...");
 }
 
 void CCSBot::StartSaveProcess()

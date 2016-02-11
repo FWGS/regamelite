@@ -6,27 +6,27 @@
 short s_iBeamSprite = 0;
 float cosTable[ COS_TABLE_SIZE ];
 
-bool UTIL_IsNameTaken(const char *name, bool ignoreHumans)
+bool UTIL_IsNameTaken (const char *name, bool ignoreHumans)
 {
 	for (int i = 1; i <= gpGlobals->maxClients; ++i)
 	{
-		CBaseEntity *player = UTIL_PlayerByIndex(i);
+		CBaseEntity *player = UTIL_PlayerByIndex (i);
 
 		if (player == NULL)
 			continue;
 
-		if (FNullEnt(player->pev))
+		if (FNullEnt (player->pev))
 			continue;
 
-		if (FStrEq(STRING(player->pev->netname), ""))
+		if (FStrEq (STRING (player->pev->netname), ""))
 			continue;
 
-		if (player->IsPlayer() && (((CBasePlayer *)player)->IsBot() == TRUE))
+		if (player->IsPlayer () && (((CBasePlayer *)player)->IsBot () == TRUE))
 		{
 			// bots can have prefixes so we need to check the name
 			// against the profile name instead.
 			CBot *bot = static_cast<CBot *>(player);
-			if (FStrEq(name, bot->GetProfile()->GetName()))
+			if (FStrEq (name, bot->GetProfile ()->GetName ()))
 			{
 				return true;
 			}
@@ -35,7 +35,7 @@ bool UTIL_IsNameTaken(const char *name, bool ignoreHumans)
 		{
 			if (!ignoreHumans)
 			{
-				if (FStrEq(name, STRING(player->pev->netname)))
+				if (FStrEq (name, STRING (player->pev->netname)))
 					return true;
 			}
 		}
@@ -44,20 +44,20 @@ bool UTIL_IsNameTaken(const char *name, bool ignoreHumans)
 	return false;
 }
 
-int UTIL_ClientsInGame()
+int UTIL_ClientsInGame ()
 {
 	int iCount = 0;
 	for (int iIndex = 1; iIndex <= gpGlobals->maxClients; ++iIndex)
 	{
-		CBaseEntity *pPlayer = UTIL_PlayerByIndex(iIndex);
+		CBaseEntity *pPlayer = UTIL_PlayerByIndex (iIndex);
 
 		if (pPlayer == NULL)
 			continue;
 
-		if (FNullEnt(pPlayer->pev))
+		if (FNullEnt (pPlayer->pev))
 			continue;
 
-		if (FStrEq(STRING(pPlayer->pev->netname), ""))
+		if (FStrEq (STRING (pPlayer->pev->netname), ""))
 			continue;
 
 		++iCount;

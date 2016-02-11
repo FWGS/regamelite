@@ -32,8 +32,6 @@
 #pragma once
 #endif
 
-#include <list>
-
 class CNavArea;
 
 void DestroyHidingSpots();
@@ -85,7 +83,7 @@ union NavConnect
 	bool operator==(const NavConnect &other) const { return (area == other.area) ? true : false; }
 };
 
-typedef std::STD_LIST<NavConnect> NavConnectList;
+typedef CUtlLinkedList<NavConnect, int> NavConnectList;
 
 enum LadderDirectionType
 {
@@ -142,7 +140,7 @@ public:
 	}
 };
 
-typedef std::STD_LIST<CNavLadder *> NavLadderList;
+typedef CUtlLinkedList<CNavLadder *, int> NavLadderList;
 
 class HidingSpot
 {
@@ -187,7 +185,7 @@ private:
 	static unsigned int m_masterMarker;
 };
 
-typedef std::STD_LIST<HidingSpot *> HidingSpotList;
+typedef CUtlLinkedList<HidingSpot *, int> HidingSpotList;
 
 struct SpotOrder
 {
@@ -199,7 +197,7 @@ struct SpotOrder
 	};
 };
 
-typedef std::STD_LIST<SpotOrder> SpotOrderList;
+typedef CUtlLinkedList<SpotOrder, int> SpotOrderList;
 
 struct SpotEncounter
 {
@@ -211,8 +209,8 @@ struct SpotEncounter
 	SpotOrderList spotList;			// list of spots to look at, in order of occurrence
 };
 
-typedef std::STD_LIST<SpotEncounter> SpotEncounterList;
-typedef std::STD_LIST<CNavArea *> NavAreaList;
+typedef CUtlLinkedList<SpotEncounter *, int> SpotEncounterList;
+typedef CUtlLinkedList<CNavArea *, int> NavAreaList;
 
 // A CNavArea is a rectangular region defining a walkable area in the map
 
@@ -254,12 +252,13 @@ public:
 	float GetDistanceSquaredToPoint(const Vector *pos) const;				// return shortest distance between point and this area
 	bool IsDegenerate() const;								// return true if this area is badly formed
 	bool IsEdge(NavDirType dir) const;							// return true if there are no bi-directional links on the given side
-	int GetAdjacentCount(NavDirType dir) const	{ return m_connect[dir].size(); }	// return number of connected areas in given direction
+	int GetAdjacentCount(NavDirType dir) const	{ return m_connect[dir].Count(); }	// return number of connected areas in given direction
 	CNavArea *GetAdjacentArea(NavDirType dir, int i) const;					// return the i'th adjacent area in the given direction
 	CNavArea *GetRandomAdjacentArea(NavDirType dir) const;
 	const NavConnectList *GetAdjacentList(NavDirType dir) const { return &m_connect[dir]; }
 	bool IsConnected(const CNavArea *area, NavDirType dir) const;				// return true if given area is connected in given direction
 	float ComputeHeightChange(const CNavArea *area);					// compute change in height from this area to given area
+	bool IsVisible (const Vector &eye, Vector *visSpot = NULL) const;	// return true if area is visible from the given eyepoint, return visible spot
 
 	const NavLadderList *GetLadderList(LadderDirectionType dir) const { return &m_ladder[dir]; }
 
@@ -346,8 +345,8 @@ public:
 	void RaiseCorner(NavCornerType corner, int amount);								// raise/lower a corner (or all corners if corner == NUM_CORNERS)
 
 	// ladders
-	void AddLadderUp(CNavLadder *ladder) { m_ladder[LADDER_UP].push_back(ladder); }
-	void AddLadderDown(CNavLadder *ladder) { m_ladder[LADDER_DOWN].push_back(ladder); }
+	void AddLadderUp(CNavLadder *ladder) { m_ladder[LADDER_UP].AddToTail(ladder); }
+	void AddLadderDown(CNavLadder *ladder) { m_ladder[LADDER_DOWN].AddToTail (ladder); }
 
 private:
 	friend void ConnectGeneratedAreas();
@@ -438,14 +437,13 @@ inline bool CNavArea::IsDegenerate() const
 
 inline CNavArea *CNavArea::GetAdjacentArea(NavDirType dir, int i) const
 {
-	NavConnectList::const_iterator iter;
-	for (iter = m_connect[dir].begin(); iter != m_connect[dir].end(); ++iter)
+	int iter;
+	for (iter = m_connect[dir].Head (); iter != m_connect[dir].InvalidIndex (); iter = m_connect[dir].Next (iter))
 	{
 		if (i == 0)
-			return (*iter).area;
+			return m_connect[dir][iter].area;
 		--i;
 	}
-
 	return NULL;
 }
 
@@ -674,11 +672,11 @@ bool NavAreaBuildPath(CNavArea *startArea, CNavArea *goalArea, const Vector *goa
 		bool searchFloor = true;
 		int dir = NORTH;
 		const NavConnectList *floorList = area->GetAdjacentList(NORTH);
-		NavConnectList::const_iterator floorIter = floorList->begin();
+		int floorIter = floorList->Head ();
 
 		bool ladderUp = true;
 		const NavLadderList *ladderList = NULL;
-		NavLadderList::const_iterator ladderIter;
+		int ladderIter = NavLadderList::InvalidIndex ();
 		enum
 		{
 			AHEAD = 0,
@@ -699,7 +697,7 @@ bool NavAreaBuildPath(CNavArea *startArea, CNavArea *goalArea, const Vector *goa
 			if (searchFloor)
 			{
 				// if exhausted adjacent connections in current direction, begin checking next direction
-				if (floorIter == floorList->end())
+				if (floorIter == floorList->InvalidIndex ())
 				{
 					++dir;
 
@@ -709,26 +707,26 @@ bool NavAreaBuildPath(CNavArea *startArea, CNavArea *goalArea, const Vector *goa
 						searchFloor = false;
 
 						ladderList = area->GetLadderList(LADDER_UP);
-						ladderIter = ladderList->begin();
+						ladderIter = ladderList->Head ();
 						ladderTopDir = AHEAD;
 					}
 					else
 					{
 						// start next direction
 						floorList = area->GetAdjacentList((NavDirType)dir);
-						floorIter = floorList->begin();
+						floorIter = floorList->Head();
 					}
 					continue;
 				}
 
-				newArea = (*floorIter).area;
+				newArea = floorList->Element (floorIter).area;
 				how = (NavTraverseType)dir;
-				++floorIter;
+				floorIter = floorList->Next (floorIter);
 			}
 			// search ladders
 			else
 			{
-				if (ladderIter == ladderList->end())
+				if (ladderIter == ladderList->InvalidIndex ())
 				{
 					if (!ladderUp)
 					{
@@ -740,19 +738,19 @@ bool NavAreaBuildPath(CNavArea *startArea, CNavArea *goalArea, const Vector *goa
 						// check down ladders
 						ladderUp = false;
 						ladderList = area->GetLadderList(LADDER_DOWN);
-						ladderIter = ladderList->begin();
+						ladderIter = ladderList->Head ();
 					}
 					continue;
 				}
 
 				if (ladderUp)
 				{
-					ladder = (*ladderIter);
+					ladder = ladderList->Element (ladderIter);
 
 					// cannot use this ladder if the ladder bottom is hanging above our head
 					if (ladder->m_isDangling)
 					{
-						++ladderIter;
+						ladderIter = ladderList->Next (ladderIter);
 						continue;
 					}
 
@@ -765,7 +763,7 @@ bool NavAreaBuildPath(CNavArea *startArea, CNavArea *goalArea, const Vector *goa
 						newArea = ladder->m_topRightArea;
 					else
 					{
-						++ladderIter;
+						ladderIter = ladderList->Next (ladderIter);
 						continue;
 					}
 
@@ -774,10 +772,10 @@ bool NavAreaBuildPath(CNavArea *startArea, CNavArea *goalArea, const Vector *goa
 				}
 				else
 				{
-					newArea = (*ladderIter)->m_bottomArea;
+					newArea = ladderList->Element (ladderIter)->m_bottomArea;
 					how = GO_LADDER_DOWN;
-					ladder = (*ladderIter);
-					++ladderIter;
+					ladder = ladderList->Element (ladderIter);
+					ladderIter = ladderList->Next (ladderIter);
 				}
 
 				if (newArea == NULL)
@@ -978,37 +976,31 @@ void SearchSurroundingAreas(CNavArea *startArea, const Vector *startPos, Functor
 			}
 
 			// explore adjacent areas connected by ladders
-			NavLadderList::const_iterator ladderIt;
 
 			// check up ladders
-			const NavLadderList *ladderList = area->GetLadderList(LADDER_UP);
-			if (ladderList != NULL)
+			const NavLadderList *ladderList = area->GetLadderList (LADDER_UP);
+			if (ladderList)
 			{
-				for (ladderIt = ladderList->begin(); ladderIt != ladderList->end(); ++ladderIt)
+				FOR_EACH_LL ((*ladderList), it)
 				{
-					const CNavLadder *ladder = *ladderIt;
-
-					// cannot use this ladder if the ladder bottom is hanging above our head
-					if (ladder->m_isDangling)
-					{
-						continue;
-					}
+					const CNavLadder *ladder = (*ladderList)[it];
 
 					// do not use BEHIND connection, as its very hard to get to when going up a ladder
-					AddAreaToOpenList(ladder->m_topForwardArea, area, startPos, maxRange);
-					AddAreaToOpenList(ladder->m_topLeftArea, area, startPos, maxRange);
-					AddAreaToOpenList(ladder->m_topRightArea, area, startPos, maxRange);
+					AddAreaToOpenList (ladder->m_topForwardArea, area, startPos, maxRange);
+					AddAreaToOpenList (ladder->m_topLeftArea, area, startPos, maxRange);
+					AddAreaToOpenList (ladder->m_topRightArea, area, startPos, maxRange);
 				}
 			}
 
 			// check down ladders
-			ladderList = area->GetLadderList(LADDER_DOWN);
-			if (ladderList != NULL)
+			ladderList = area->GetLadderList (LADDER_DOWN);
+			if (ladderList)
 			{
-				for (ladderIt = ladderList->begin(); ladderIt != ladderList->end(); ++ladderIt)
+				FOR_EACH_LL ((*ladderList), it)
 				{
-					const CNavLadder *ladder = *ladderIt;
-					AddAreaToOpenList(ladder->m_bottomArea, area, startPos, maxRange);
+					const CNavLadder *ladder = (*ladderList)[it];
+
+					AddAreaToOpenList (ladder->m_bottomArea, area, startPos, maxRange);
 				}
 			}
 		}
@@ -1021,10 +1013,9 @@ void SearchSurroundingAreas(CNavArea *startArea, const Vector *startPos, Functor
 template <typename Functor>
 bool ForAllAreas(Functor &func)
 {
-	NavAreaList::iterator iter;
-	for (iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *iter;
+		CNavArea *area = TheNavAreaList[it];
 		if (func(area) == false)
 			return false;
 	}
@@ -1080,10 +1071,9 @@ CNavArea *FindMinimumCostArea(CNavArea *startArea, CostFunctor &costFunc)
 	cheapAreaSet[NUM_CHEAP_AREAS];
 	int cheapAreaSetCount = 0;
 
-	NavAreaList::iterator iter;
-	for (iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = *iter;
+		CNavArea *area = TheNavAreaList[it];
 
 		// skip the small areas
 		const Extent *extent = area->GetExtent();
@@ -1123,17 +1113,16 @@ CNavArea *FindMinimumCostArea(CNavArea *startArea, CostFunctor &costFunc)
 	else
 	{
 		// degenerate case - no decent sized areas - pick a random area
-		int numAreas = TheNavAreaList.size();
+		int numAreas = TheNavAreaList.Count();
 		int which = RANDOM_LONG(0, numAreas - 1);
 
-		NavAreaList::iterator iter;
-		for (iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+		FOR_EACH_LL (TheNavAreaList, it)
 		{
 			if (which-- == 0)
-				break;
+				return TheNavAreaList[it];
 		}
 
-		return *iter;
+		return cheapAreaSet[RANDOM_LONG (0, cheapAreaSetCount - 1)].area;
 	}
 }
 
@@ -1156,8 +1145,6 @@ const Vector *FindNearbyRetreatSpot(CBaseEntity *me, const Vector *start, CNavAr
 bool IsCrossingLineOfFire(const Vector &start, const Vector &finish, CBaseEntity *ignore = NULL, int ignoreTeam = 0);
 const Vector *FindRandomHidingSpot(CBaseEntity *me, Place place, bool isSniper = false);
 HidingSpot *GetHidingSpotByID(unsigned int id);
-void ApproachAreaAnalysisPrep();
-void CleanupApproachAreaAnalysisPrep();
 void DestroyLadders();
 void DestroyNavigationMap();
 void StripNavigationAreas();

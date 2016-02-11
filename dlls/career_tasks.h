@@ -32,8 +32,6 @@
 #pragma once
 #endif
 
-#include <list>
-
 class CCareerTask
 {
 public:
@@ -76,8 +74,7 @@ private:
 	bool m_vip;
 };
 
-typedef std::STD_LIST<CCareerTask *> CareerTaskList;
-typedef CareerTaskList::iterator CareerTaskListIt;
+typedef CUtlLinkedList<CCareerTask *, int> CareerTaskList;
 
 typedef CCareerTask *(*TaskFactoryFunction)(const char *taskName, GameEventType event, const char *weaponName, int eventCount, bool mustLive, bool crossRounds, int nextId, bool isComplete);
 

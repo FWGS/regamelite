@@ -1,5 +1,4 @@
 #include "precompiled.h"
-#include <algorithm>
 
 /*
 * Globals initialization
@@ -12,12 +11,11 @@ IntervalTimer BotChatterInterface::m_radioSilenceInterval[ 2 ];
 const Vector *GetRandomSpotAtPlace(Place place)
 {
 	int count = 0;
-	NavAreaList::iterator iter;
 	int which;
 
-	for (iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = (*iter);
+		CNavArea *area = TheNavAreaList[it];
 
 		if (area->GetPlace() == place)
 			++count;
@@ -28,9 +26,9 @@ const Vector *GetRandomSpotAtPlace(Place place)
 
 	which = RANDOM_LONG(0, count - 1);
 
-	for (iter = TheNavAreaList.begin(); iter != TheNavAreaList.end(); ++iter)
+	FOR_EACH_LL (TheNavAreaList, it)
 	{
-		CNavArea *area = (*iter);
+		CNavArea *area = TheNavAreaList[it];
 
 		if (area->GetPlace() == place && which == 0)
 			return area->GetCenter();
@@ -272,28 +270,28 @@ BotPhrase::BotPhrase(unsigned int id, bool isPlace)
 	InitVoiceBank(0);
 }
 
-BotPhrase::~BotPhrase()
+BotPhrase::~BotPhrase ()
 {
-	for (uint32 bank = 0; bank < m_voiceBank.size(); ++bank)
+	for (int bank = 0; bank < m_voiceBank.Count (); ++bank)
 	{
-		for (uint32 speakable = 0; speakable < m_voiceBank[bank]->size(); ++speakable)
+		for (int speakable = 0; speakable < m_voiceBank[bank]->Count (); ++speakable)
 		{
 			delete (*m_voiceBank[bank])[speakable];
 		}
 		delete m_voiceBank[bank];
 	}
 
-	if (m_name != NULL)
-		delete [] m_name;
+	if (m_name)
+		delete[] m_name;
 }
 
 void BotPhrase::InitVoiceBank(int bankIndex)
 {
 	while (m_numVoiceBanks <= bankIndex)
 	{
-		m_count.push_back(0);
-		m_index.push_back(0);
-		m_voiceBank.push_back(new BotSpeakableVector);
+		m_count.AddToTail (0);
+		m_index.AddToTail (0);
+		m_voiceBank.AddToTail (new BotSpeakableVector);
 		++m_numVoiceBanks;
 	}
 }
@@ -358,9 +356,21 @@ char *BotPhrase::GetSpeakable(int bankIndex, float *duration) const
 
 void BotPhrase::Randomize()
 {
-	for (uint32 i = 0; i < m_voiceBank.size(); ++i)
+	for (int bank = 0; bank < m_voiceBank.Count (); ++bank)
 	{
-		std::random_shuffle(m_voiceBank[i]->begin(), m_voiceBank[i]->end());
+		BotSpeakableVector *speakables = m_voiceBank[bank];
+		if (speakables->Count () == 1)
+			continue;
+
+		// A simple shuffle: for each array index, swap it with a random index
+		for (int index = 0; index < speakables->Count (); ++index)
+		{
+			int newIndex = RANDOM_LONG (0, speakables->Count () - 1);
+
+			BotSpeakable *speakable = (*speakables)[index];
+			(*speakables)[index] = (*speakables)[newIndex];
+			(*speakables)[newIndex] = speakable;
+		}
 	}
 }
 
@@ -385,17 +395,16 @@ void BotPhraseManager::OnRoundRestart()
 {
 	// effectively reset all interval timers
 	m_placeCount = 0;
-	BotPhraseList::const_iterator iter;
 
 	// shuffle all the speakables
-	for (iter = m_placeList.begin(); iter != m_placeList.end(); ++iter)
+	FOR_EACH_LL (m_placeList, it)
 	{
-		(*iter)->Randomize();
+		m_placeList[it]->Randomize();
 	}
 
-	for (iter = m_list.begin(); iter != m_list.end(); ++iter)
+	FOR_EACH_LL (m_list, it)
 	{
-		(*iter)->Randomize();
+		m_list[it]->Randomize();
 	}
 }
 
@@ -624,7 +633,7 @@ bool BotPhraseManager::Initialize(const char *filename, int bankIndex)
 				}
 
 				BotSpeakableVector *speakables = phrase->m_voiceBank[ bankIndex ];
-				speakables->push_back(speak);
+				speakables->AddToTail(speak);
 
 				++phrase->m_count[ bankIndex ];
 			}
@@ -637,9 +646,9 @@ bool BotPhraseManager::Initialize(const char *filename, int bankIndex)
 
 			// add phrase collection to the appropriate master list
 			if (isPlace)
-				m_placeList.push_back(phrase);
+				m_placeList.AddToTail (phrase);
 			else
-				m_list.push_back(phrase);
+				m_list.AddToTail (phrase);
 		}
 	}
 
@@ -650,44 +659,36 @@ bool BotPhraseManager::Initialize(const char *filename, int bankIndex)
 
 BotPhraseManager::~BotPhraseManager()
 {
-	BotPhraseList::iterator iter;
-	for (iter = m_list.begin(); iter != m_list.end(); ++iter)
-	{
-		const BotPhrase *phrase = *iter;
+	int i;
 
-		if (phrase != NULL)
-		{
-			delete phrase;
-		}
+	// free phrase resources
+	for (i = 0; i < m_list.Count (); ++i)
+	{
+		delete m_list[i];
 	}
 
-	for (iter = m_placeList.begin(); iter != m_placeList.end(); ++iter)
+	for (i = 0; i < m_placeList.Count (); ++i)
 	{
-		const BotPhrase *phrase = *iter;
-
-		if (phrase != NULL)
-		{
-			delete phrase;
-		}
+		delete m_placeList[i];
 	}
 
-	m_list.clear();
-	m_placeList.clear();
+	m_list.RemoveAll ();
+	m_placeList.RemoveAll ();
 }
 
 Place BotPhraseManager::NameToID(const char *name) const
 {
-	for (BotPhraseList::const_iterator iter = m_placeList.begin(); iter != m_placeList.end(); ++iter)
+	FOR_EACH_LL (m_placeList, it)
 	{
-		const BotPhrase *phrase = *iter;
+		const BotPhrase *phrase = m_placeList[it];
 
 		if (!Q_stricmp(phrase->m_name, name))
 			return phrase->m_id;
 	}
 
-	for (BotPhraseList::const_iterator iter = m_list.begin(); iter != m_list.end(); ++iter)
+	FOR_EACH_LL (m_list, it)
 	{
-		const BotPhrase *phrase = *iter;
+		const BotPhrase *phrase = m_list[it];
 
 		if (!Q_stricmp(phrase->m_name, name))
 			return phrase->m_id;
@@ -698,17 +699,17 @@ Place BotPhraseManager::NameToID(const char *name) const
 
 const char *BotPhraseManager::IDToName(Place id) const
 {
-	for (BotPhraseList::const_iterator iter = m_placeList.begin(); iter != m_placeList.end(); ++iter)
+	FOR_EACH_LL (m_placeList, it)
 	{
-		const BotPhrase *phrase = *iter;
+		const BotPhrase *phrase = m_placeList[it];
 
 		if (phrase->m_id == id)
 			return phrase->m_name;
 	}
 
-	for (BotPhraseList::const_iterator iter = m_list.begin(); iter != m_list.end(); ++iter)
+	FOR_EACH_LL (m_list, it)
 	{
-		const BotPhrase *phrase = *iter;
+		const BotPhrase *phrase = m_list[it];
 
 		if (phrase->m_id == id)
 			return phrase->m_name;
@@ -721,9 +722,9 @@ const char *BotPhraseManager::IDToName(Place id) const
 
 const BotPhrase *BotPhraseManager::GetPhrase(const char *name) const
 {
-	for (BotPhraseList::const_iterator iter = m_list.begin(); iter != m_list.end(); ++iter)
+	FOR_EACH_LL (m_list, it)
 	{
-		const BotPhrase *phrase = *iter;
+		const BotPhrase *phrase = m_list[it];
 
 		if (!Q_stricmp(phrase->m_name, name))
 			return phrase;
@@ -759,9 +760,9 @@ const BotPhrase *BotPhraseManager::GetPlace(const char *name) const
 	if (name == NULL)
 		return NULL;
 
-	for (BotPhraseList::const_iterator iter = m_placeList.begin(); iter != m_placeList.end(); ++iter)
+	FOR_EACH_LL (m_placeList, it)
 	{
-		const BotPhrase *phrase = *iter;
+		const BotPhrase *phrase = m_placeList[it];
 
 		if (!Q_stricmp(phrase->m_name, name))
 			return phrase;
@@ -777,9 +778,9 @@ const BotPhrase *BotPhraseManager::GetPlace(PlaceCriteria place) const
 	if (place == UNDEFINED_PLACE)
 		return NULL;
 
-	for (BotPhraseList::const_iterator iter = m_placeList.begin(); iter != m_placeList.end(); ++iter)
+	FOR_EACH_LL (m_placeList, it)
 	{
-		const BotPhrase *phrase = *iter;
+		const BotPhrase *phrase = m_placeList[it];
 
 		if (phrase->m_id == place)
 			return phrase;

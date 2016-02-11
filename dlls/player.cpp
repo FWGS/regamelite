@@ -588,11 +588,13 @@ void CBasePlayer::Radio(const char *msg_id, const char *msg_verbose, short pitch
 						Place playerPlace = TheNavAreaGrid.GetPlace(&pev->origin);
 						const BotPhraseList *placeList = TheBotPhrases->GetPlaceList();
 
-						for (BotPhraseList::const_iterator iter = placeList->begin(); iter != placeList->end(); ++iter)
+						FOR_EACH_LL ((*placeList), it)
 						{
-							if ((*iter)->GetID() == playerPlace)
+							const BotPhrase *phrase = (*placeList)[it];
+
+							if (phrase->GetID() == playerPlace)
 							{
-								placeName = (*iter)->GetName();
+								placeName = phrase->GetName();
 								break;
 							}
 						}
@@ -3746,7 +3748,7 @@ void CBasePlayer::PlayerUse()
 		}
 	}
 
-	bool useNewHostages = !TheNavAreaList.empty();
+	bool useNewHostages = g_bIsCzeroGame && TheNavAreaList.Count();
 	CBaseEntity *pObject = NULL;
 	CBaseEntity *pClosest = NULL;
 	Vector vecLOS;
@@ -8423,7 +8425,7 @@ const char *CBasePlayer::PickPrimaryCareerTaskWeapon()
 	const int BufLen = 256;
 	static char buf[BufLen];
 	CBasePlayerWeapon *primary;
-	std::vector<CCareerTask *> taskVector;
+	CUtlVector<CCareerTask *> taskVector;
 
 	if (TheCareerTasks == NULL)
 	{
@@ -8433,9 +8435,11 @@ const char *CBasePlayer::PickPrimaryCareerTaskWeapon()
 	buf[0] = '\0';
 	primary = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[PRIMARY_WEAPON_SLOT]);
 
-	for (CareerTaskListIt it = TheCareerTasks->GetTasks()->begin(); it != TheCareerTasks->GetTasks()->end(); ++it)
+	CareerTaskList *tasks = TheCareerTasks->GetTasks ();
+
+	FOR_EACH_LL((*tasks), it)
 	{
-		CCareerTask *pTask = (*it);
+		CCareerTask *pTask = (*tasks)[it];
 
 		if (pTask->IsComplete() || pTask->GetWeaponId() == WEAPON_HEGRENADE)
 			continue;
@@ -8463,10 +8467,10 @@ const char *CBasePlayer::PickPrimaryCareerTaskWeapon()
 			}
 		}
 
-		taskVector.push_back(pTask);
+		taskVector.AddToTail(pTask);
 	}
 
-	int taskNum = taskVector.size();
+	int taskNum = taskVector.Count();
 
 	if (taskNum > 1)
 	{
@@ -8504,7 +8508,7 @@ const char *CBasePlayer::PickSecondaryCareerTaskWeapon()
 	const int BufLen = 256;
 	static char buf[BufLen];
 	CBasePlayerWeapon *secondary;
-	std::vector<CCareerTask *> taskVector;
+	CUtlVector<CCareerTask *> taskVector;
 
 	if (TheCareerTasks == NULL)
 	{
@@ -8513,9 +8517,11 @@ const char *CBasePlayer::PickSecondaryCareerTaskWeapon()
 
 	secondary = static_cast<CBasePlayerWeapon *>(m_rgpPlayerItems[PISTOL_SLOT]);
 
-	for (CareerTaskListIt it = TheCareerTasks->GetTasks()->begin(); it != TheCareerTasks->GetTasks()->end(); ++it)
+	CareerTaskList *tasks = TheCareerTasks->GetTasks ();
+
+	FOR_EACH_LL ((*tasks), it)
 	{
-		CCareerTask *pTask = (*it);
+		CCareerTask *pTask = (*tasks)[it];
 
 		if (pTask->IsComplete() || pTask->GetWeaponId() == WEAPON_HEGRENADE)
 			continue;
@@ -8543,10 +8549,10 @@ const char *CBasePlayer::PickSecondaryCareerTaskWeapon()
 			}
 		}
 
-		taskVector.push_back(pTask);
+		taskVector.AddToTail(pTask);
 	}
 
-	int taskNum = taskVector.size();
+	int taskNum = taskVector.Count();
 
 	if (taskNum > 1)
 	{
@@ -8588,9 +8594,11 @@ const char *CBasePlayer::PickFlashKillWeaponString()
 
 	bool foundOne = false;
 
-	for (CareerTaskListIt it = TheCareerTasks->GetTasks()->begin(); it != TheCareerTasks->GetTasks()->end(); ++it)
+	CareerTaskList *tasks = TheCareerTasks->GetTasks ();
+
+	FOR_EACH_LL ((*tasks), it)
 	{
-		CCareerTask *pTask = (*it);
+		CCareerTask *pTask = (*tasks)[it];
 
 		if (!pTask->IsComplete() && !Q_strcmp(pTask->GetTaskName(), "killblind"))
 		{
@@ -8612,9 +8620,11 @@ const char *CBasePlayer::PickGrenadeKillWeaponString()
 
 	bool foundOne = false;
 
-	for (CareerTaskListIt it = TheCareerTasks->GetTasks()->begin(); it != TheCareerTasks->GetTasks()->end(); ++it)
+	CareerTaskList *tasks = TheCareerTasks->GetTasks ();
+
+	FOR_EACH_LL ((*tasks), it)
 	{
-		CCareerTask *pTask = (*it);
+		CCareerTask *pTask = (*tasks)[it];
 
 		if (!pTask->IsComplete() && pTask->GetWeaponId() == WEAPON_HEGRENADE)
 		{
@@ -9101,11 +9111,13 @@ void CBasePlayer::UpdateLocation(bool forceUpdate)
 		Place playerPlace = TheNavAreaGrid.GetPlace(&pev->origin);
 		const BotPhraseList *placeList = TheBotPhrases->GetPlaceList();
 
-		for (BotPhraseList::const_iterator iter = placeList->begin(); iter != placeList->end(); ++iter)
+		FOR_EACH_LL ((*placeList), it)
 		{
-			if ((*iter)->GetID() == playerPlace)
+			BotPhrase *phrase = (*placeList)[it];
+
+			if (phrase->GetID() == playerPlace)
 			{
-				placeName = (*iter)->GetName();
+				placeName = phrase->GetName();
 				break;
 			}
 		}

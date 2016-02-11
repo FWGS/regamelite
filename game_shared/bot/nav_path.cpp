@@ -71,47 +71,49 @@ bool CNavPath::ComputePathPositions()
 		else if (to->how == GO_LADDER_UP)
 		{
 			// find our ladder
-			const NavLadderList *list = from->area->GetLadderList(LADDER_UP);
-			NavLadderList::const_iterator iter;
-			for (iter = list->begin(); iter != list->end(); ++iter)
+			const NavLadderList *list = from->area->GetLadderList (LADDER_UP);
+			int it;
+			for (it = list->Head (); it != list->InvalidIndex (); it = list->Next (it))
 			{
-				CNavLadder *ladder = *iter;
+				CNavLadder *ladder = list->Element (it);
 
 				// can't use "behind" area when ascending...
 				if (ladder->m_topForwardArea == to->area || ladder->m_topLeftArea == to->area || ladder->m_topRightArea == to->area)
 				{
 					to->ladder = ladder;
 					to->pos = ladder->m_bottom;
-					AddDirectionVector(&to->pos, ladder->m_dir, 2.0f * HalfHumanWidth);
+					AddDirectionVector (&to->pos, ladder->m_dir, 2.0f * HalfHumanWidth);
 					break;
 				}
 			}
 
-			if (iter == list->end())
+			if (it == list->InvalidIndex ())
 			{
 				//PrintIfWatched( "ERROR: Can't find ladder in path\n" );
 				return false;
 			}
+
 		}
 		// to get to next area, must go down a ladder
 		else if (to->how == GO_LADDER_DOWN)
 		{
 			// find our ladder
-			const NavLadderList *list = from->area->GetLadderList(LADDER_DOWN);
-			NavLadderList::const_iterator iter;
-			for (iter = list->begin(); iter != list->end(); ++iter)
+			const NavLadderList *list = from->area->GetLadderList (LADDER_DOWN);
+			int it;
+			for (it = list->Head (); it != list->InvalidIndex (); it = list->Next (it))
 			{
-				CNavLadder *ladder = *iter;
+				CNavLadder *ladder = list->Element (it);
 
 				if (ladder->m_bottomArea == to->area)
 				{
 					to->ladder = ladder;
 					to->pos = ladder->m_top;
-					AddDirectionVector(&to->pos, OppositeDirection(ladder->m_dir), 2.0f * HalfHumanWidth);
+					AddDirectionVector (&to->pos, OppositeDirection (ladder->m_dir), 2.0f * HalfHumanWidth);
 					break;
 				}
 			}
-			if (iter == list->end())
+
+			if (it == list->InvalidIndex ())
 			{
 				//PrintIfWatched( "ERROR: Can't find ladder in path\n" );
 				return false;

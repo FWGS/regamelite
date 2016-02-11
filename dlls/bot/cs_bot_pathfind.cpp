@@ -67,57 +67,56 @@ bool CCSBot::ComputePathPositions()
 				}
 			}
 		}
-		// to get to next area, must go up a ladder
-		else if (to->how == GO_LADDER_UP)
+		else if (to->how == GO_LADDER_UP)		// to get to next area, must go up a ladder
 		{
 			// find our ladder
-			const NavLadderList *list = from->area->GetLadderList(LADDER_UP);
-			NavLadderList::const_iterator iter;
-			for (iter = list->begin(); iter != list->end(); ++iter)
+			const NavLadderList *list = from->area->GetLadderList (LADDER_UP);
+			int it;
+			for (it = list->Head (); it != list->InvalidIndex (); it = list->Next (it))
 			{
-				CNavLadder *ladder = (*iter);
+				CNavLadder *ladder = (*list)[it];
 
 				// can't use "behind" area when ascending...
 				if (ladder->m_topForwardArea == to->area || ladder->m_topLeftArea == to->area || ladder->m_topRightArea == to->area)
 				{
 					to->ladder = ladder;
 					to->pos = ladder->m_bottom;
-					AddDirectionVector(&to->pos, ladder->m_dir, HalfHumanWidth * 2.0f);
+					AddDirectionVector (&to->pos, ladder->m_dir, 2.0f * HalfHumanWidth);
 					break;
 				}
 			}
 
-			if (iter == list->end())
+			if (it == list->InvalidIndex ())
 			{
-				PrintIfWatched("ERROR: Can't find ladder in path\n");
+				//PrintIfWatched( "ERROR: Can't find ladder in path\n" );
 				return false;
 			}
 		}
-		// to get to next area, must go down a ladder
-		else if (to->how == GO_LADDER_DOWN)
+		else if (to->how == GO_LADDER_DOWN)		// to get to next area, must go down a ladder
 		{
 			// find our ladder
-			const NavLadderList *list = from->area->GetLadderList(LADDER_DOWN);
-			NavLadderList::const_iterator iter;
-			for (iter = list->begin(); iter != list->end(); ++iter)
+			const NavLadderList *list = from->area->GetLadderList (LADDER_DOWN);
+			int it;
+			for (it = list->Head (); it != list->InvalidIndex (); it = list->Next (it))
 			{
-				CNavLadder *ladder = (*iter);
+				CNavLadder *ladder = (*list)[it];
 
 				if (ladder->m_bottomArea == to->area)
 				{
 					to->ladder = ladder;
 					to->pos = ladder->m_top;
-					AddDirectionVector(&to->pos, OppositeDirection(ladder->m_dir), HalfHumanWidth * 2.0f);
+					AddDirectionVector (&to->pos, OppositeDirection (ladder->m_dir), 2.0f * HalfHumanWidth);
 					break;
 				}
 			}
 
-			if (iter == list->end())
+			if (it == list->InvalidIndex ())
 			{
-				PrintIfWatched("ERROR: Can't find ladder in path\n");
+				//PrintIfWatched( "ERROR: Can't find ladder in path\n" );
 				return false;
 			}
 		}
+
 	}
 
 	return true;

@@ -879,5 +879,8 @@
     <ClInclude Include="..\public\utlvector.h">
       <Filter>public</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\utllinkedlist.h">
+      <Filter>public</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

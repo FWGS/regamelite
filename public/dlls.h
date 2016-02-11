@@ -38,6 +38,7 @@
 #include "nodes.h"
 #include "screenfade.h"
 #include "utlvector.h"
+#include "utllinkedlist.h"
 
 // SDK
 #include "usercmd.h"

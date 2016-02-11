@@ -44,10 +44,6 @@
 	printf2(__FUNCTION__":: iNumPassed - %d", iNumPassedt++);\
 	_logf(__FUNCTION__":: iNumPassed - %d", iNumPassedt++);
 
-// Makes these more explicit, and easier to find
-#define STD_LIST list
-#define STD_VECTOR vector
-
 #define FILE_GLOBAL
 #define DLL_GLOBAL
 

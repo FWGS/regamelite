@@ -516,6 +516,7 @@
     <ClInclude Include="..\public\osconfig.h" />
     <ClInclude Include="..\public\precompiled.h" />
     <ClInclude Include="..\public\protected_things.h" />
+    <ClInclude Include="..\public\utllinkedlist.h" />
     <ClInclude Include="..\public\utlmemory.h" />
     <ClInclude Include="..\public\utlvector.h" />
   </ItemGroup>
