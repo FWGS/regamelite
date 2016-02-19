@@ -1149,7 +1149,7 @@ void SV_StudioSetupBones(model_t *pModel, float frame, int sequence, const vec_t
 
 	VectorCopy(angles, temp_angles);
 
-	if (pEdict != NULL)
+	if (pEdict != NULL && (pEdict->v.flags & (FL_CLIENT | FL_FAKECLIENT)))
 	{
 		temp_angles[1] = UTIL_GetPlayerGaitYaw(ENTINDEX(pEdict));
 
