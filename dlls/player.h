@@ -862,8 +862,6 @@ void packPlayerItem(CBasePlayer *pPlayer, CBasePlayerItem *pItem, bool packAmmo)
 bool CanSeeUseable(CBasePlayer *me, CBaseEntity *entity);
 NOXREF void FixPlayerCrouchStuck(edict_t *pPlayer);
 BOOL IsSpawnPointValid(CBaseEntity *pPlayer, CBaseEntity *pSpot);
-NOXREF void InitZombieSpawns();
-NOXREF CBaseEntity *FindZombieSpawn(CBaseEntity *player, bool forceSpawn);
 edict_t *EntSelectSpawnPoint(CBaseEntity *pPlayer);
 void SetScoreAttrib(CBasePlayer *dest, CBasePlayer *src);
 CBaseEntity *FindEntityForward(CBaseEntity *pMe);

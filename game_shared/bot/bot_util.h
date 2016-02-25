@@ -173,17 +173,6 @@ bool ForEachPlayer(Functor &func)
 	return true;
 }
 
-// For zombie game
-
-inline bool IsZombieGame()
-{
-#ifdef TERRORSTRIKE
-	return true;
-#else
-	return false;
-#endif // TERRORSTRIKE
-}
-
 extern cvar_t cv_bot_traceview;
 extern cvar_t cv_bot_stop;
 extern cvar_t cv_bot_show_nav;

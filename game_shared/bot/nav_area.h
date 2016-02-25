@@ -985,6 +985,12 @@ void SearchSurroundingAreas(CNavArea *startArea, const Vector *startPos, Functor
 				{
 					const CNavLadder *ladder = (*ladderList)[it];
 
+					// cannot use this ladder if the ladder bottom is hanging above our head
+					if (ladder->m_isDangling)
+					{
+						continue;
+					}
+
 					// do not use BEHIND connection, as its very hard to get to when going up a ladder
 					AddAreaToOpenList (ladder->m_topForwardArea, area, startPos, maxRange);
 					AddAreaToOpenList (ladder->m_topLeftArea, area, startPos, maxRange);

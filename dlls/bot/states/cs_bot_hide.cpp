@@ -400,7 +400,7 @@ void HideState::OnUpdate(CCSBot *me)
 
 				// hide where we are
 				m_hidingSpot.x = me->pev->origin.x;
-				m_hidingSpot.x = me->pev->origin.y;
+				m_hidingSpot.y = me->pev->origin.y;
 				m_hidingSpot.z = me->GetFeetZ();
 			}
 			else

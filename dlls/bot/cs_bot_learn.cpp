@@ -395,7 +395,7 @@ void CCSBot::UpdateAnalyzeAlphaProcess()
 		}
 	}
 
-	float progress = _currentIndex / _navAreaCount * 50.0f;
+	float progress = (double (_currentIndex) / double (_navAreaCount)) * 0.5f;
 	drawProgressMeter(progress, "Analyzing hiding spots...");
 }
 
@@ -435,7 +435,7 @@ void CCSBot::UpdateAnalyzeBetaProcess()
 		}
 	}
 
-	float progress = ((_currentIndex / _navAreaCount) + 1.0f) * 50.0f;
+	float progress = (double (_currentIndex) / double (_navAreaCount) + 1.0f) * 0.5f;
 	drawProgressMeter(progress, "Analyzing approach points...");
 }
 
@@ -464,7 +464,7 @@ void CCSBot::UpdateSaveProcess()
 	hideProgressMeter();
 	StartNormalProcess();
 
-	Q_sprintf(cmd, "map %s\n", STRING(gpGlobals->mapname));
+	Q_sprintf (cmd, "changelevel %s\n", STRING (gpGlobals->mapname));
 	SERVER_COMMAND(cmd);
 }
 

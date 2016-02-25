@@ -4,7 +4,6 @@
 * Globals initialization
 */
 BotPhraseManager *TheBotPhrases = NULL;
-CBaseEntity *g_pSelectedZombieSpawn = NULL;
 CountdownTimer BotChatterInterface::m_encourageTimer;
 IntervalTimer BotChatterInterface::m_radioSilenceInterval[ 2 ];
 

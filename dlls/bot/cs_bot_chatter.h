@@ -587,7 +587,6 @@ inline BotStatement *BotChatterInterface::GetStatement() const
 }
 
 extern BotPhraseManager *TheBotPhrases;
-extern CBaseEntity *g_pSelectedZombieSpawn;
 
 inline void BotChatterInterface::Say(const char *phraseName, float lifetime, float delay)
 {

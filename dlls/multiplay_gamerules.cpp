@@ -551,7 +551,9 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 	}
 
 	sv_clienttrace = CVAR_GET_POINTER("sv_clienttrace");
-	InstallTutor(CVAR_GET_FLOAT("tutor_enable") != 0.0f);
+
+	if (g_bIsCzeroGame)
+		InstallTutor(CVAR_GET_FLOAT("tutor_enable") != 0.0f);
 
 	g_pMPGameRules = this;
 }

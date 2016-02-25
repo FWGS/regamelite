@@ -35,9 +35,6 @@
 extern const Vector g_vecZero;
 extern int g_Language;
 
-extern NOXREF u_long g_ulFrameCount;
-extern NOXREF u_long g_ulModelIndexEyes;
-
 extern Vector g_vecAttackDir;
 extern int g_iSkillLevel;
 extern int gDisplayTitle;

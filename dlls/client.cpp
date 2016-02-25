@@ -4018,8 +4018,6 @@ void EXT_FUNC StartFrame()
 	{
 		TheTutor->StartFrame(gpGlobals->time);
 	}
-
-	++g_ulFrameCount;
 }
 
 void ClientPrecache()
@@ -5204,16 +5202,6 @@ int EXT_FUNC GetHullBounds(int hullnumber, float *mins, float *maxs)
 
 void EXT_FUNC CreateInstancedBaselines()
 {
-	int iret = 0;
-	entity_state_t state;
-
-	Q_memset(&state, 0, sizeof(state));
-
-	// Create any additional baselines here for things like grendates, etc.
-	// iret = ENGINE_INSTANCE_BASELINE(pc->pev->classname, &state);
-
-	// Destroy objects.
-	// UTIL_Remove(pc);
 }
 
 int EXT_FUNC InconsistentFile(const edict_t *player, const char *filename, char *disconnect_message)

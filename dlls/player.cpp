@@ -195,15 +195,6 @@ CBaseEntity *g_pLastSpawn;
 CBaseEntity *g_pLastCTSpawn;
 CBaseEntity *g_pLastTerroristSpawn;
 
-struct ZombieSpawn
-{
-	CBaseEntity *entity;
-	CountdownTimer useableTimer;
-};
-
-ZombieSpawn zombieSpawn[256];
-int zombieSpawnCount;
-
 void LinkUserMessages()
 {
 	if (gmsgCurWeapon)
@@ -4811,30 +4802,6 @@ BOOL IsSpawnPointValid(CBaseEntity *pPlayer, CBaseEntity *pSpot)
 	return TRUE;
 }
 
-NOXREF void InitZombieSpawns()
-{
-	CBaseEntity *spot = NULL;
-
-	g_pSelectedZombieSpawn = NULL;
-	zombieSpawnCount = 0;
-
-	while ((spot = UTIL_FindEntityByClassname(spot, "info_player_start")) != NULL)
-	{
-		if (spot->pev->origin != Vector(0, 0, 0))
-		{
-			zombieSpawn[ zombieSpawnCount ].entity = spot;
-			zombieSpawn[ zombieSpawnCount ].useableTimer.Invalidate();
-
-			zombieSpawnCount++;
-		}
-	}
-}
-
-NOXREF CBaseEntity *FindZombieSpawn(CBaseEntity *player, bool forceSpawn)
-{
-	return NULL;
-}
-
 bool CBasePlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot)
 {
 	edict_t *player = edict();
@@ -8280,7 +8247,7 @@ void CBasePlayer::AddAutoBuyData(const char *str)
 		if (len > 0)
 			m_autoBuyString[ len ] = ' ';
 
-		Q_strncat(m_autoBuyString, str, MAX_AUTOBUY_LENGTH - len);
+		Q_strncat(m_autoBuyString, str, MAX_AUTOBUY_LENGTH - len - 1);
 	}
 }
 

@@ -229,11 +229,17 @@ void BuyState::OnUpdate(CCSBot *me)
 	// if we're done buying and still in the freeze period, wait
 	if (m_doneBuying)
 	{
-		if (g_pGameRules->IsMultiplayer() && g_pGameRules->IsFreezePeriod())
+		if (g_pGameRules->IsMultiplayer () && g_pGameRules->IsFreezePeriod ())
+		{
+			// make sure we're locked and loaded
+			me->EquipBestWeapon (MUST_EQUIP);
+			me->Reload ();
+			me->ResetStuckMonitor ();
 			return;
+		}
 
 		me->Idle();
-		//return;
+		return;
 	}
 
 	// is the bot spawned outside of a buy zone?
