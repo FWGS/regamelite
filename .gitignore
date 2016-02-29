@@ -10,3 +10,6 @@
 *.pdb
 *.pch
 *.ipch
+*.sdf
+*.iobj
+*.ipdb

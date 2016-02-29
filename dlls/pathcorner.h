@@ -40,7 +40,7 @@ public:
 	virtual int Save(CSave &save);
 	virtual int Restore(CRestore &restore);
 
-	float GetDelay() const { return m_flWait; }
+	virtual float GetDelay() const { return m_flWait; }
 
 public:
 	static TYPEDESCRIPTION m_SaveData[1];

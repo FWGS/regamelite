@@ -263,7 +263,7 @@ protected:
 	// it's in release builds so this can be used in libraries correctly
 	ListElem_t  *m_pElements;
 
-	FORCEINLINE M const &Memory( void ) const
+	inline M const &Memory( void ) const
 	{
 		return m_Memory;
 	}
