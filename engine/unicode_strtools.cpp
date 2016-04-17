@@ -28,6 +28,8 @@
 
 #include "precompiled.h"
 
+#include <wctype.h>
+
 /* <f2fc1> ../engine/unicode_strtools.cpp:23 */
 //-----------------------------------------------------------------------------
 // Purpose: determine if a uchar32 represents a valid Unicode code point
