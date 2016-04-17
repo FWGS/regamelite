@@ -7920,7 +7920,9 @@ float GetPlayerPitch(const edict_t *pEdict)
 
 float GetPlayerYaw(const edict_t *pEdict)
 {
+	Assert( pEdict );
 	entvars_t *pev = VARS(const_cast<edict_t *>(pEdict));
+	Assert( oev)
 	CBasePlayer *pPlayer = dynamic_cast<CBasePlayer *>(CBasePlayer::Instance(pev));
 
 	if (!pPlayer)
