@@ -12,8 +12,6 @@ endif
 
 LOCAL_CFLAGS += -w -D_LINUX -DCLIENT_WEAPONS -Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_stricmp=strcasecmp -D_vsnprintf=vsnprintf -D_strdup=strdup -D_write=write -D_close=close \
 	-fno-exceptions
-
-LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) -frtti
 	
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/. \
 		    $(LOCAL_PATH)/.. \
@@ -165,21 +163,7 @@ LOCAL_SRC_FILES := \
 	../pm_shared/pm_shared.cpp \
 	../public/MemPool.cpp \
 
-LOCAL_CFLAGS += $(CFLAGS_OPT)
-ifeq ($(TARGET_ARCH_ABI),armeabi-v7a-hard)
-LOCAL_CFLAGS += $(CFLAGS_OPT_ARM) -mfloat-abi=hard -mhard-float
-LOCAL_MODULE_FILENAME = libserver_hardfp
-endif
-ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
-LOCAL_CFLAGS += $(CFLAGS_OPT_ARM) -mfloat-abi=softfp
-endif
-ifeq ($(TARGET_ARCH_ABI),armeabi)
-LOCAL_CFLAGS += $(CFLAGS_OPT_ARMv5)
-endif
-ifeq ($(TARGET_ARCH_ABI),x86)
-LOCAL_CFLAGS += $(CFLAGS_OPT_X86)
-endif
 
-LOCAL_CPPFLAGS := $(LOCAL_CFLAGS) -frtti -fpermissive
+LOCAL_CPPFLAGS += -frtti -fpermissive
 
 include $(BUILD_SHARED_LIBRARY)
