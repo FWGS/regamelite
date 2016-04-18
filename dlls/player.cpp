@@ -7907,37 +7907,36 @@ void CBasePlayer::ResetStamina()
 	pev->fuser2 = 0;
 }
 
+
 float GetPlayerPitch(const edict_t *pEdict)
 {
-	entvars_t *pev = VARS(const_cast<edict_t *>(pEdict));
-	CBasePlayer *pPlayer = dynamic_cast<CBasePlayer *>(CBasePlayer::Instance(pev));
+	entvars_t *pev = VARS((edict_t *)pEdict);
+	CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance(pev);
 
 	if (!pPlayer)
-		return 0.0f;
+		return 0;
 
 	return pPlayer->m_flPitch;
 }
 
 float GetPlayerYaw(const edict_t *pEdict)
 {
-	Assert( pEdict );
-	entvars_t *pev = VARS(const_cast<edict_t *>(pEdict));
-	Assert( oev)
-	CBasePlayer *pPlayer = dynamic_cast<CBasePlayer *>(CBasePlayer::Instance(pev));
+	entvars_t *pev = VARS((edict_t *)pEdict);
+	CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance(pev);
 
 	if (!pPlayer)
-		return 0.0f;
+		return 0;
 
 	return pPlayer->m_flYaw;
 }
 
 int GetPlayerGaitsequence(const edict_t *pEdict)
 {
-	entvars_t *pev = VARS(const_cast<edict_t *>(pEdict));
-	CBasePlayer *pPlayer = dynamic_cast<CBasePlayer *>(CBasePlayer::Instance(pev));
+	entvars_t *pev = VARS((edict_t *)pEdict);
+	CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance(pev);
 
 	if (!pPlayer)
-		return 1;
+		return 0;
 
 	return pPlayer->m_iGaitsequence;
 }

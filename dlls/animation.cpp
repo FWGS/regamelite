@@ -1025,8 +1025,15 @@ void SV_StudioSetupBones(model_t *pModel, float frame, int sequence, const vec_t
 		
 		float s, t;
 
-		s = GetPlayerYaw(pEdict);
-		t = GetPlayerPitch(pEdict);
+		if( pEdict )
+		{
+			s = GetPlayerYaw(pEdict);
+			t = GetPlayerPitch(pEdict);
+		}
+		else
+		{
+			s = t = 0.0f;
+		}
 
 		// Blending is 0-127 == Left to Middle, 128 to 255 == Middle to right
 		if (s <= 127.0f)
@@ -1118,7 +1125,12 @@ void SV_StudioSetupBones(model_t *pModel, float frame, int sequence, const vec_t
 	if (pseqdesc->numblends == 9 && sequence < ANIM_FIRST_DEATH_SEQUENCE && sequence != ANIM_SWIM_1 && sequence != ANIM_SWIM_2)
 	{
 		int copy = 1;
-		int gaitsequence = GetPlayerGaitsequence(pEdict);	// calc gait animation
+		int gaitsequence;
+		
+		if( pEdict )
+			gaitsequence = GetPlayerGaitsequence(pEdict);	// calc gait animation
+		else
+			gaitsequence = 0;
 
 		if (gaitsequence < 0 || gaitsequence >= g_pstudiohdr->numseq)
 			gaitsequence = 0;
