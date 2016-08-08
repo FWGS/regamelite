@@ -261,7 +261,9 @@ void CCSBot::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *othe
 		if ((entity->pev->origin - pev->origin).IsLengthGreaterThan(1000.0f))
 			return;
 
-		if (IsVisible(&entity->Center()))
+		Vector v = entity->Center();
+
+		if (IsVisible(&v))
 		{
 			m_task = COLLECT_HOSTAGES;
 			m_taskEntity = NULL;

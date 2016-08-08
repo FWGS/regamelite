@@ -164,6 +164,6 @@ LOCAL_SRC_FILES := \
 	../public/MemPool.cpp \
 
 
-LOCAL_CPPFLAGS += -frtti -fpermissive
+LOCAL_CPPFLAGS += -frtti
 
 include $(BUILD_SHARED_LIBRARY)

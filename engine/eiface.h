@@ -530,7 +530,7 @@ typedef struct
 typedef int(*NEW_DLL_FUNCTIONS_FN)(NEW_DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion);
 
 // Pointers will be null if the game DLL doesn't support this API.
-extern NEW_DLL_FUNCTIONS	gNewDLLFunctions;
+//extern NEW_DLL_FUNCTIONS	gNewDLLFunctions;
 
 typedef int(*APIFUNCTION)(DLL_FUNCTIONS *pFunctionTable, int interfaceVersion);
 typedef int(*APIFUNCTION2)(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion);
