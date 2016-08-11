@@ -49,6 +49,8 @@ typedef unsigned int CountCriteria;
 class BotMeme
 {
 public:
+	virtual ~BotMeme(){}
+
 	void Transmit(CCSBot *sender) const;						// transmit meme to other bots
 	virtual void Interpret(CCSBot *sender, CCSBot *receiver) const = 0;		// cause the given bot to act on this meme
 };

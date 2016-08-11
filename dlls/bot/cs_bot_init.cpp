@@ -38,6 +38,7 @@ void InstallBotControl()
 	if (TheBots != NULL)
 	{
 		delete TheBots;
+		TheBots = NULL;
 	}
 
 	TheBots = new CCSBotManager;
