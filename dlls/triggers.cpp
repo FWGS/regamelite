@@ -1287,7 +1287,7 @@ int CChangeLevel::AddTransitionToList(LEVELLIST *pLevelList, int listCount, cons
 
 int BuildChangeList(LEVELLIST *pLevelList, int maxList)
 {
-	CChangeLevel::ChangeList(pLevelList, maxList);
+	return CChangeLevel::ChangeList(pLevelList, maxList);
 }
 
 int CChangeLevel::InTransitionVolume(CBaseEntity *pEntity, char *pVolumeName)
