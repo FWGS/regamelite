@@ -817,6 +817,7 @@ BotStatement::~BotStatement()
 	if (m_meme != NULL)
 	{
 		delete m_meme;
+		m_meme = NULL;
 	}
 }
 

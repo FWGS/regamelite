@@ -42,7 +42,7 @@ void HostageFollowState::OnUpdate(CHostageImprov *improv)
 	const float maxPathLength = 3000.0f;
 	const float giveUpRange = 1000.0f;
 
-	if (range > giveUpRange || improv->GetPath()->GetSegmentCount() > 0 && improv->GetPath()->GetLength() > maxPathLength)
+	if( range > giveUpRange || ( improv->GetPath()->GetSegmentCount() > 0 && improv->GetPath()->GetLength() > maxPathLength ) )
 	{
 		improv->Idle();
 		return;

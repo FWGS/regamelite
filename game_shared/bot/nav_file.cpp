@@ -728,12 +728,12 @@ void SanityCheckNavigationMap(const char *mapName)
 
 		unsigned int bspSize = (unsigned int)GET_FILE_SIZE(bspFilename);
 
-		if (bspSize != saveBspSize)
+		/*if (bspSize != saveBspSize)
 		{
 			// this nav file is out of date for this bsp file
 			CONSOLE_ECHO("ERROR: Out-of-date navigation data in navigation file %s.\n", navFilename);
 			return;
-		}
+		}*/
 	}
 
 	CONSOLE_ECHO("navigation file %s passes the sanity check.\n", navFilename);

@@ -149,7 +149,7 @@ void CCareerTask::SendPartialNotification()
 
 void CCareerTask::OnWeaponKill(int weaponId, int weaponClassId, bool headshot, bool killerHasShield, CBasePlayer *pAttacker, CBasePlayer *pVictim)
 {
-	if (m_isComplete || m_event != EVENT_KILL && (m_event != EVENT_HEADSHOT || !headshot))
+	if( m_isComplete || ( m_event != EVENT_KILL && ( m_event != EVENT_HEADSHOT || !headshot ) ) )
 	{
 		return;
 	}
@@ -264,9 +264,9 @@ void CCareerTask::OnEvent(GameEventType event, CBasePlayer *pVictim, CBasePlayer
 			}
 		}
 
-		if (m_event != EVENT_KILL || (!m_weaponId && !m_weaponClassId)
-			&& m_event != EVENT_HEADSHOT || (!m_weaponId && !m_weaponClassId)
-			&& m_event != EVENT_PLAYER_TOOK_DAMAGE || (!m_weaponId && !m_weaponClassId))
+		if( m_event != EVENT_KILL || ( !m_weaponId && !m_weaponClassId
+			&& m_event != EVENT_HEADSHOT ) || ( !m_weaponId && !m_weaponClassId
+			&& m_event != EVENT_PLAYER_TOOK_DAMAGE ) || ( !m_weaponId && !m_weaponClassId ) )
 		{
 			if (m_event == EVENT_ROUND_WIN)
 			{

@@ -171,7 +171,7 @@ public:
 	void Frighten(ScareType scare);
 	bool IsScared() const;
 	ScareType GetScareIntensity() const { return m_scareIntensity; }
-	bool IsIgnoringTerrorists() const { m_ignoreTerroristTimer.IsElapsed(); }
+	bool IsIgnoringTerrorists() const { return m_ignoreTerroristTimer.IsElapsed(); }
 	float GetAggression() const { return m_aggression; }
 	void Chatter(HostageChatterType sayType, bool mustSpeak = true);
 	void DelayedChatter(float delayTime, HostageChatterType sayType, bool mustSpeak = false);
