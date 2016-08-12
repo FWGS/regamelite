@@ -1719,7 +1719,7 @@ void CWeaponBox::Touch(CBaseEntity *pOther)
 
 				CBaseEntity *pEntity = NULL;
 
-				while (pEntity = UTIL_FindEntityByClassname(pEntity, "player"))
+				while( ( pEntity = UTIL_FindEntityByClassname( pEntity, "player" ) ) )
 				{
 					if (FNullEnt(pEntity->edict()))
 						break;

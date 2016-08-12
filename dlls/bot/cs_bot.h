@@ -1080,7 +1080,7 @@ inline bool CCSBot::IsSurprised() const
 
 inline float CCSBot::GetSurpriseDelay() const
 {
-	return gpGlobals->time - IsSurprised() ? m_surpriseDelay : 0.0f;
+	return gpGlobals->time - ( IsSurprised() ? m_surpriseDelay : 0.0f );
 }
 
 inline void CCSBot::ClearSurpriseDelay()

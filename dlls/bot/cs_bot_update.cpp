@@ -206,10 +206,10 @@ void CCSBot::Update()
 	}
 
 	// Debug beam rendering
-	if (cv_bot_traceview.value == 2.0f && IsLocalPlayerWatchingMe() || cv_bot_traceview.value == 3.0f)
+	if( ( cv_bot_traceview.value == 2.0f && IsLocalPlayerWatchingMe() ) || cv_bot_traceview.value == 3.0f )
 		DrawApproachPoints();
 
-	if (cv_bot_traceview.value == 4.0f && IsLocalPlayerWatchingMe() || cv_bot_traceview.value == 5.0f)
+	if( ( cv_bot_traceview.value == 4.0f && IsLocalPlayerWatchingMe() ) || cv_bot_traceview.value == 5.0f )
 	{
 		// ...
 	}

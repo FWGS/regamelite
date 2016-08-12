@@ -210,7 +210,7 @@ void CHostage::IdleThink()
 		return;
 	}
 
-	if (m_hTargetEnt != NULL && (m_bStuck && gpGlobals->time - m_flStuckTime > 5.0f || m_hTargetEnt->pev->deadflag != DEAD_NO))
+	if( m_hTargetEnt != NULL && ( ( m_bStuck && gpGlobals->time - m_flStuckTime > 5.0f ) || m_hTargetEnt->pev->deadflag != DEAD_NO ) )
 	{
 		m_State = STAND;
 		m_hTargetEnt = NULL;
