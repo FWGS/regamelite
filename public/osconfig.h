@@ -75,11 +75,11 @@
 	#include <ctype.h>
 	//#include <dirent.h>
 	#include <dlfcn.h>
-	#include <elf.h>
+	//#include <elf.h>
 	#include <errno.h>
 	#include <fcntl.h>
 	#include <limits.h>
-	#include <link.h>
+	//#include <link.h>
 	#include <netdb.h>
 	#include <netinet/in.h>
 	#include <pthread.h>
@@ -89,7 +89,7 @@
 	#include <sys/stat.h>
 	#include <sys/time.h>
 	#include <sys/types.h>
-	#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+	#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__)
 		#include <sys/sysctl.h>
 	#else
 		#include <sys/sysinfo.h>
