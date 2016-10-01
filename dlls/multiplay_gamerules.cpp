@@ -4439,7 +4439,7 @@ void CHalfLifeMultiplay::ProcessMapVote(CBasePlayer *player, int iVote)
 		{
 			++iNumPlayers;
 
-			if (pTempPlayer->m_iMapVote = iVote)
+			if( ( pTempPlayer->m_iMapVote = iVote ) )
 				++iValidVotes;
 		}
 	}

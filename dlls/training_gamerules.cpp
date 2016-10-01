@@ -362,7 +362,7 @@ void CBaseGrenCatch::Think()
 	m_fSmokeTouching = false;
 	pGrenade = NULL;
 
-	while (pGrenade = (CGrenade *)UTIL_FindEntityByClassname(pGrenade, "grenade"))
+	while( ( pGrenade = (CGrenade *)UTIL_FindEntityByClassname( pGrenade, "grenade" ) ) )
 	{
 		vMin = pGrenade->pev->mins;
 		vMax = pGrenade->pev->maxs;
@@ -403,7 +403,7 @@ void CBaseGrenCatch::Think()
 	{
 		pTrigger = NULL;
 
-		while (pTrigger = UTIL_FindEntityByTargetname(pTrigger, STRING(sDisableOnGrenade)))
+		while( ( pTrigger = UTIL_FindEntityByTargetname( pTrigger, STRING( sDisableOnGrenade ) ) ) )
 		{
 			// restore solid
 			pTrigger->pev->solid = pTrigger->pev->team;

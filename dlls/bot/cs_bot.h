@@ -55,13 +55,13 @@
 
 extern int _navAreaCount;
 extern int _currentIndex;
-
+/*
 extern struct BuyInfo primaryWeaponBuyInfoCT[ PRIMARY_WEAPON_BUY_COUNT ];
 extern struct BuyInfo secondaryWeaponBuyInfoCT[ SECONDARY_WEAPON_BUY_COUNT ];
 
 extern struct BuyInfo primaryWeaponBuyInfoT[ PRIMARY_WEAPON_BUY_COUNT ];
 extern struct BuyInfo secondaryWeaponBuyInfoT[ SECONDARY_WEAPON_BUY_COUNT ];
-
+*/
 class CCSBot;
 class BotChatterInterface;
 
@@ -1080,7 +1080,7 @@ inline bool CCSBot::IsSurprised() const
 
 inline float CCSBot::GetSurpriseDelay() const
 {
-	return gpGlobals->time - IsSurprised() ? m_surpriseDelay : 0.0f;
+	return gpGlobals->time - ( IsSurprised() ? m_surpriseDelay : 0.0f );
 }
 
 inline void CCSBot::ClearSurpriseDelay()

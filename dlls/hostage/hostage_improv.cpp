@@ -1223,7 +1223,7 @@ void CHostageImprov::OnGameEvent(GameEventType event, CBaseEntity *entity, CBase
 		{
 			Frighten(TERRIFIED);
 
-			if (!entity->IsPlayer() || entity->IsPlayer() && ((CBasePlayer *)entity)->m_iTeam != TERRORIST)
+			if( !entity->IsPlayer() || ( entity->IsPlayer() && ( (CBasePlayer *)entity )->m_iTeam != TERRORIST ) )
 			{
 				DelayedChatter(RANDOM_FLOAT(0.5, 0.7), HOSTAGE_CHATTER_SCARED_OF_MURDER, true);
 			}

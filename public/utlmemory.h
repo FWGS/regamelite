@@ -226,7 +226,7 @@ void CUtlMemory<T, I>::ConvertToGrowableMemory (int nGrowSize)
 	if (m_nAllocationCount)
 	{
 		UTLMEMORY_TRACK_ALLOC ();
-		MEM_ALLOC_CREDIT_CLASS ();
+		//MEM_ALLOC_CREDIT_CLASS ();
 
 		int nNumBytes = m_nAllocationCount * sizeof (T);
 		T *pMemory = (T*)malloc (nNumBytes);
@@ -511,12 +511,12 @@ inline void CUtlMemory<T, I>::EnsureCapacity (int num)
 
 	if (m_pMemory)
 	{
-		MEM_ALLOC_CREDIT_CLASS ();
+		//MEM_ALLOC_CREDIT_CLASS ();
 		m_pMemory = (T*)realloc (m_pMemory, m_nAllocationCount * sizeof (T));
 	}
 	else
 	{
-		MEM_ALLOC_CREDIT_CLASS ();
+		//MEM_ALLOC_CREDIT_CLASS ();
 		m_pMemory = (T*)malloc (m_nAllocationCount * sizeof (T));
 	}
 }
@@ -586,7 +586,7 @@ void CUtlMemory<T, I>::Purge (int numElements)
 	UTLMEMORY_TRACK_ALLOC ();
 
 	// Allocation count > 0, shrink it down.
-	MEM_ALLOC_CREDIT_CLASS ();
+	//MEM_ALLOC_CREDIT_CLASS ();
 	m_pMemory = (T*)realloc (m_pMemory, m_nAllocationCount * sizeof (T));
 }
 

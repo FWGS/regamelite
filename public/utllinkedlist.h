@@ -449,7 +449,7 @@ inline bool CUtlFixedLinkedList<T>::IsInList( int i ) const
 template< class T, class S, bool ML, class I, class M >
 void CUtlLinkedList<T,S,ML,I,M>::EnsureCapacity( int num )
 {
-	MEM_ALLOC_CREDIT_CLASS();
+	//MEM_ALLOC_CREDIT_CLASS();
 	m_Memory.EnsureCapacity(num);
 	ResetDbgInfo();
 }
