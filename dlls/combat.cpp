@@ -1823,6 +1823,25 @@ Vector CBaseEntity::FireBullets3(Vector vecSrc, Vector vecDirShooting, float vec
 
 			DecalGunshot(&tr, iBulletType, (!bPistol && RANDOM_LONG(0, 3)), pev, bHitMetal);
 
+#ifdef TRACE_BULLETS
+			Vector vecEndPos2 = tr.vecEndPos - (vecDir * 3);
+			MESSAGE_BEGIN(MSG_ALL, SVC_TEMPENTITY);
+				WRITE_BYTE(TE_LINE);
+				WRITE_COORD(vecEndPos2.x);
+				WRITE_COORD(vecEndPos2.y);
+				WRITE_COORD(vecEndPos2.z);
+				
+				WRITE_COORD(tr.vecEndPos.x);
+				WRITE_COORD(tr.vecEndPos.y);
+				WRITE_COORD(tr.vecEndPos.z);
+				WRITE_SHORT(300);
+				WRITE_BYTE(0);
+				WRITE_BYTE(0);
+				WRITE_BYTE(255);
+			MESSAGE_END();
+#endif
+			
+			
 			vecSrc = tr.vecEndPos + (vecDir * iPenetrationPower);
 			flDistance = (flDistance - flCurrentDistance) * flDistanceModifier;
 			vecEnd = vecSrc + (vecDir * flDistance);
