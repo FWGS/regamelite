@@ -3715,7 +3715,7 @@ void EXT_FUNC ClientCommand(edict_t *pEntity)
 			}
 			else if (FStrEq(pcmd, "buy"))
 			{
-				if (player->m_signals.GetState() & SIGNAL_BUY)
+				//if (player->m_signals.GetState() & SIGNAL_BUY)
 				{
 					ShowVGUIMenu(player, VGUI_Menu_Buy, (MENU_KEY_1 | MENU_KEY_2 | MENU_KEY_3 | MENU_KEY_4 | MENU_KEY_5 | MENU_KEY_6 | MENU_KEY_7 | MENU_KEY_8 | MENU_KEY_0), "#Buy");
 					player->m_iMenu = Menu_Buy;

@@ -3438,6 +3438,7 @@ void CHalfLifeMultiplay::PlayerSpawn(CBasePlayer *pPlayer)
 
 BOOL CHalfLifeMultiplay::FPlayerCanRespawn(CBasePlayer *pPlayer)
 {
+	return true;
 	// Player cannot respawn twice in a round
 	if (pPlayer->m_iNumSpawns > 0)
 	{

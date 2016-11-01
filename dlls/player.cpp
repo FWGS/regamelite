@@ -4010,6 +4010,7 @@ bool CBasePlayer::CanPlayerBuy(bool display)
 	{
 		return false;
 	}
+	return true;
 
 	int buyTime = (int)(CVAR_GET_FLOAT("mp_buytime") * 60.0f);
 
@@ -8243,7 +8244,7 @@ void CBasePlayer::AddAutoBuyData(const char *str)
 {
 	int len = Q_strlen(m_autoBuyString);
 
-	if (len < MAX_AUTOBUY_LENGTH - 1)
+	if (len < MAX_AUTOBUY_LENGTH / 2)
 	{
 		if (len > 0)
 			m_autoBuyString[ len ] = ' ';
